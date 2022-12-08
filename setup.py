@@ -48,7 +48,7 @@ setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "mold=itaxotools.mold:run",
+            "mold=itaxotools.mold:main",
             "mold-gui=itaxotools.mold.gui:run",
         ],
         "pyinstaller40": [
