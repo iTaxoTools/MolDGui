@@ -129,7 +129,7 @@ class ConfigSelector(InputSelector):
 
 class SequenceSelector(InputSelector):
     def __init__(self, parent=None):
-        super().__init__('Sequence Data File', 'Open a Fasta file that includes taxon identifiers', parent)
+        super().__init__('Sequence Data File', 'To begin, open a Fasta file that includes taxon identifiers', parent)
 
 
 class MoldView(TaskView):
@@ -171,17 +171,19 @@ class MoldView(TaskView):
         if path is None:
             return
         if is_fasta(path):
-            self.object.open_sequences(path)
+            self.object.open_sequence_path(path)
         else:
-            self.object.open_configuration(path)
+            self.object.open_configuration_path(path)
 
     def openConfiguration(self):
         path = self.getOpenPath()
-        self.object.open_configuration(path)
+        if path is not None:
+            self.object.open_configuration_path(path)
 
     def openSequence(self):
         path = self.getOpenPath()
-        self.object.open_sequence(path)
+        if path is not None:
+            self.object.open_sequence_path(path)
 
     def save(self):
         path = self.getSavePath('Save all')
