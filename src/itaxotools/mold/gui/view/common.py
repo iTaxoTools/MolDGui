@@ -174,3 +174,32 @@ class GSpinBox(QtWidgets.QSpinBox):
     @override
     def wheelEvent(self, event):
         event.ignore()
+
+
+class LongLabel(QtWidgets.QLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
+        self.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.setWordWrap(True)
+
+        action = QtGui.QAction('&Copy', self)
+        action.setShortcut(QtGui.QKeySequence.Copy)
+        action.triggered.connect(self.copy)
+        self.addAction(action)
+
+        action = QtGui.QAction(self)
+        action.setSeparator(True)
+        self.addAction(action)
+
+        action = QtGui.QAction('Select &All', self)
+        action.setShortcut(QtGui.QKeySequence.SelectAll)
+        action.triggered.connect(self.select)
+        self.addAction(action)
+
+    def copy(self):
+        text = self.selectedText()
+        QtWidgets.QApplication.clipboard().setText(text)
+
+    def select(self):
+        self.setSelection(0, len(self.text()))

@@ -24,7 +24,7 @@ from itaxotools.common.utility import AttrDict, override
 from itaxotools.common.widgets import VLineSeparator
 
 from .. import app
-from .common import Card, TaskView, GLineEdit
+from .common import Card, TaskView, GLineEdit, LongLabel
 
 
 def is_fasta(path):
@@ -40,16 +40,12 @@ class TitleCard(Card):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        description = QtWidgets.QLabel(
+        description = LongLabel(
             'Identify diagnostic nucleotide combinations (DNCs) in DNA sequence alignments, which can be used to provide formal diagnoses of these taxa. This is in the form of "redundant DNC” (rDNC), which takes into account unsampled genetic diversity.')
-        description.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        description.setWordWrap(True)
 
-        citations = QtWidgets.QLabel(
+        citations = LongLabel(
             'Fedosov A.E., Achaz G., Gontchar A., Puillandre N. 2022. MOLD, a novel software to compile accurate and reliable DNA diagnoses for taxonomic descriptions. Molecular Ecology Resources, DOI: 10.1111/1755-0998.13590.')
-        citations.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
-        citations.setStyleSheet("color: Palette(Dark)")
-        citations.setWordWrap(True)
+        citations.setStyleSheet("LongLabel {color: Palette(Dark)}")
 
         contents = QtWidgets.QVBoxLayout()
         contents.addWidget(description)
