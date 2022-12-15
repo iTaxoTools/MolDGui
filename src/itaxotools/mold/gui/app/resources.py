@@ -50,7 +50,7 @@ pixmaps = ResourceLoader(
         _get_common('logos/itaxotools-logo-64px.png')),
     logo_tool = lambda: VectorPixmap(
         _get_local('logos/mold.svg'),
-        size=QtCore.QSize(132, 44),
+        size=QtCore.QSize(122, 44),
         colormap=skin.colormap_icon)
 )
 
@@ -64,5 +64,5 @@ icons = ResourceLoader(
     stop = lambda: VectorIcon(
         _get_common('icons/svg/stop.svg'), skin.colormap),
     app = lambda: QtGui.QIcon(
-        _get_local('logos/mold.ico')),
+        _get_local('logos/mold_d.ico')),
 )

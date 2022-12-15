@@ -30,7 +30,7 @@ colors = {
     'iron':   '#8b8d8a',
     'black':  '#454241',
     'red':    '#ee4e5f',
-    'pink':   '#eb9597',
+    'pink':   '#f0bcbd',
     'orange': '#eb6a4a',
     'brown':  '#655c5d',
     'green':  '#00ff00',
@@ -54,6 +54,7 @@ colormap_icon = {
     '#000': colors['black'],
     '#f00': colors['red'],
     '#f88': colors['pink'],
+    '#ccc': colors['beige'],
 }
 
 colormap_icon_light = {
