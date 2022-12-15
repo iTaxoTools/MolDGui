@@ -20,6 +20,7 @@ from datetime import datetime
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
+from ..utility import Property, Instance
 from .common import Task
 
 
@@ -38,6 +39,8 @@ def dummy_process(**kwargs):
 
 
 class MoldModel(Task):
+    configuration_path = Property(Path, None)
+    sequence_path = Property(Path, Path('samples/foo.fas'))
 
     def __init__(self, name=None):
         super().__init__(name)
@@ -57,3 +60,12 @@ class MoldModel(Task):
             dummy_process,
             foo=42
         )
+
+    def open_configuration(self, path):
+        self.configuration_path = path
+
+    def open_sequence(self, path):
+        self.sequence_path = path
+
+    def save(self, path):
+        print('save', path)

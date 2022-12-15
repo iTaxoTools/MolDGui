@@ -19,10 +19,10 @@
 from PySide6 import QtCore, QtWidgets
 
 from .. import app
+from ..types import Notification
 from ..view import MoldView
 from ..model import MoldModel
 from ..utility import Binder
-
 
 class ScrollArea(QtWidgets.QScrollArea):
 
@@ -57,12 +57,17 @@ class Body(QtWidgets.QStackedWidget):
         area.ensureVisible(0, 0)
 
         self.binder.unbind_all()
+
+        self.binder.bind(self.actions.open.triggered, view.open)
+        self.binder.bind(self.actions.save.triggered, view.save)
+
         self.binder.bind(self.actions.start.triggered, object.start)
         self.binder.bind(self.actions.stop.triggered, object.stop)
-        self.binder.bind(self.actions.save.triggered, object.save_all)
+
         self.binder.bind(object.properties.ready, self.actions.start.setEnabled)
         self.binder.bind(object.properties.done, self.actions.save.setEnabled)
         self.binder.bind(object.properties.busy, self.actions.start.setVisible, lambda busy: not busy)
         self.binder.bind(object.properties.busy, self.actions.stop.setVisible)
+
 
         return True

@@ -42,12 +42,12 @@ class Main(ToolDialog):
         self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowIcon(app.resources.icons.app)
         self.setWindowTitle(app.title)
-        self.resize(640, 500)
+        self.resize(700, 500)
 
         self.act()
         self.draw()
 
-        self.model = MoldModel()
+        self.model = MoldModel('Molecular Diagnosis')
         self.widgets.body.showModel(self.model)
 
         for file in files:
@@ -61,7 +61,6 @@ class Main(ToolDialog):
         self.actions.open.setIcon(app.resources.icons.open)
         self.actions.open.setShortcut(QtGui.QKeySequence.Open)
         self.actions.open.setStatusTip('Open an existing file')
-        self.actions.open.triggered.connect(self.handleOpen)
 
         self.actions.save = QtGui.QAction('&Save all', self)
         self.actions.save.setIcon(app.resources.icons.save)
@@ -95,10 +94,3 @@ class Main(ToolDialog):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
-
-    def handleOpen(self):
-        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self, f'{app.title} - Open File')
-        if not filename:
-            return
-        print(filename)

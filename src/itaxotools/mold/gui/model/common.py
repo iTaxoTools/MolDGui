@@ -118,13 +118,6 @@ class Task(Object):
         self.notification.emit(Notification.Warn('Cancelled by user.'))
         self.busy = False
 
-    def save_all(self):
-        """Slot for saving all results"""
-        try:
-            print('Save all')
-        except Exception as exception:
-            self.notification.emit(Notification.Fail(str(report.exception), ''))
-
     def readyTriggers(self) -> List[PropertyRef]:
         """Overload this to set properties as ready triggers"""
         return []

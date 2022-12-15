@@ -25,6 +25,7 @@ from itaxotools.common.utility import AttrDict, override
 from .. import app
 from ..model import Object
 from ..utility import Guard, Binder
+from ..types import Notification
 
 
 class ObjectView(QtWidgets.QFrame):
@@ -37,19 +38,37 @@ class ObjectView(QtWidgets.QFrame):
 
     def setObject(self, object: Object):
         self.object = object
-        self.updateView()
-
-    def updateView(self):
-        pass
-
-    def bind(self, src, dst, proxy=None):
-        self.binder.bind(src, dst, proxy)
-
-    def unbind(self, src, dst):
-        self.binder.unbind(src, dst)
-
-    def unbind_all(self):
         self.binder.unbind_all()
+        self.binder.bind(object.notification, self.showNotification)
+
+    def showNotification(self, notification):
+        icon = {
+            Notification.Info: QtWidgets.QMessageBox.Information,
+            Notification.Warn: QtWidgets.QMessageBox.Warning,
+            Notification.Fail: QtWidgets.QMessageBox.Critical,
+        }[notification.type]
+
+        msgBox = QtWidgets.QMessageBox(self.window())
+        msgBox.setWindowTitle(app.title)
+        msgBox.setIcon(icon)
+        msgBox.setText(notification.text)
+        msgBox.setDetailedText(notification.info)
+        msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msgBox.exec()
+
+    def getOpenPath(self, caption ='Open File', dir=''):
+        filename, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self.window(), f'{app.title} - {caption}', dir)
+        if not filename:
+            return None
+        return Path(filename)
+
+    def getSavePath(self, caption ='Open File', dir=''):
+        filename, _ = QtWidgets.QFileDialog.getSaveFileName(
+            self.window(), f'{app.title} - {caption}', dir)
+        if not filename:
+            return None
+        return Path(filename)
 
 
 class TaskView(ObjectView):
@@ -67,7 +86,7 @@ class Card(QtWidgets.QFrame):
 
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(24)
-        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setContentsMargins(16, 8, 16, 8)
         self.setLayout(layout)
 
     def addWidget(self, widget):
