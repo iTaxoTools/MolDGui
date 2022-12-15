@@ -27,6 +27,7 @@ from itaxotools.common.utility import AttrDict
 from itaxotools.common.widgets import ToolDialog
 
 from .. import app
+from ..model import MoldModel
 from .body import Body
 from .footer import Footer
 from .header import Header
@@ -41,10 +42,13 @@ class Main(ToolDialog):
         self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowIcon(app.resources.icons.app)
         self.setWindowTitle(app.title)
-        self.resize(800, 500)
+        self.resize(600, 500)
 
         self.draw()
         self.act()
+
+        self.model = MoldModel()
+        self.widgets.body.showModel(self.model)
 
         for file in files:
             print(file)

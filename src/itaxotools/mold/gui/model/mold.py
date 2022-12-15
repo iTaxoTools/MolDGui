@@ -16,5 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
-class MoldModel:
+from .common import Task
+
+class MoldModel(Task):
     pass

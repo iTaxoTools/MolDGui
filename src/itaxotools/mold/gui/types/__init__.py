@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# MolDGui - Module and Gui for MolD
+# Taxi3Gui - GUI for Taxi3
 # Copyright (C) 2022  Patmanidis Stefanos
 #
 # This program is free software: you can redistribute it and/or modify
@@ -16,5 +16,5 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
-class MoldView:
-    pass
+from ._type import *
+from .common import *

@@ -38,7 +38,7 @@ class Body(QtWidgets.QStackedWidget):
         super().__init__(*args, **kwargs)
         self.areas = dict()
 
-        # self.addView(MoldModel, MoldView)
+        self.addView(MoldModel, MoldView)
 
     def addView(self, object_type, view_type, *args, **kwargs):
         view = view_type(parent=self, *args, **kwargs)
@@ -46,7 +46,7 @@ class Body(QtWidgets.QStackedWidget):
         self.areas[object_type] = area
         self.addWidget(area)
 
-    def showModel(self, object: MoldModel, index: QtCore.QModelIndex):
+    def showModel(self, object: MoldModel):
         area = self.areas.get(type(object))
         view = area.widget()
         view.setObject(object)
