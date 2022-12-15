@@ -42,31 +42,16 @@ class Main(ToolDialog):
         self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowIcon(app.resources.icons.app)
         self.setWindowTitle(app.title)
-        self.resize(600, 500)
+        self.resize(640, 500)
 
-        self.draw()
         self.act()
+        self.draw()
 
         self.model = MoldModel()
         self.widgets.body.showModel(self.model)
 
         for file in files:
             print(file)
-
-    def draw(self):
-        """Draw all contents"""
-        self.widgets = AttrDict()
-        self.widgets.header = Header(self)
-        self.widgets.body = Body(self)
-        self.widgets.footer = Footer(self)
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.widgets.header)
-        layout.addWidget(self.widgets.body, 1)
-        layout.addWidget(self.widgets.footer)
-        layout.setSpacing(0)
-        layout.setContentsMargins(0, 0, 0, 0)
-        self.setLayout(layout)
 
     def act(self):
         """Populate dialog actions"""
@@ -78,28 +63,38 @@ class Main(ToolDialog):
         self.actions.open.setStatusTip('Open an existing file')
         self.actions.open.triggered.connect(self.handleOpen)
 
-        self.actions.save = QtGui.QAction('&Save', self)
+        self.actions.save = QtGui.QAction('&Save all', self)
         self.actions.save.setIcon(app.resources.icons.save)
         self.actions.save.setShortcut(QtGui.QKeySequence.Save)
         self.actions.save.setStatusTip('Save results')
-        self.actions.save.triggered.connect(self.handleSave)
 
-        self.actions.run = QtGui.QAction('&Run', self)
-        self.actions.run.setIcon(app.resources.icons.run)
-        self.actions.run.setShortcut('Ctrl+R')
-        self.actions.run.setStatusTip('Run MolD')
-        self.actions.run.triggered.connect(self.handleRun)
+        self.actions.start = QtGui.QAction('&Run', self)
+        self.actions.start.setIcon(app.resources.icons.run)
+        self.actions.start.setShortcut('Ctrl+R')
+        self.actions.start.setStatusTip('Run MolD')
 
         self.actions.stop = QtGui.QAction('&Stop', self)
         self.actions.stop.setIcon(app.resources.icons.stop)
         self.actions.stop.setStatusTip('Stop MolD')
-        self.actions.stop.triggered.connect(self.handleStop)
         self.actions.stop.setVisible(False)
 
-        self.widgets.header.toolBar.addAction(self.actions.open)
-        self.widgets.header.toolBar.addAction(self.actions.save)
-        self.widgets.header.toolBar.addAction(self.actions.run)
-        self.widgets.header.toolBar.addAction(self.actions.stop)
+    def draw(self):
+        """Draw all contents"""
+        self.widgets = AttrDict()
+        self.widgets.header = Header(self)
+        self.widgets.body = Body(self)
+        self.widgets.footer = Footer(self)
+
+        for action in self.actions:
+            self.widgets.header.toolBar.addAction(action)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(self.widgets.header)
+        layout.addWidget(self.widgets.body, 1)
+        layout.addWidget(self.widgets.footer)
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
+        self.setLayout(layout)
 
     def handleOpen(self):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -107,18 +102,3 @@ class Main(ToolDialog):
         if not filename:
             return
         print(filename)
-
-    def handleSave(self):
-        try:
-            self._handleSave()
-        except Exception as exception:
-            QtWidgets.QMessageBox.critical(self, app.title, str(exception))
-
-    def _handleSave(self):
-        print('save')
-
-    def handleRun(self):
-        print('run')
-
-    def handleStop(self):
-        print('stop')

@@ -57,15 +57,14 @@ class Task(Object):
     notification = QtCore.Signal(Notification)
     progression = QtCore.Signal(ReportProgress)
 
-    ready = Property(bool)
-    busy = Property(bool)
+    ready = Property(bool, True)
+    busy = Property(bool, False)
+    done = Property(bool, False)
 
     counters = defaultdict(lambda: itertools.count(1, 1))
 
     def __init__(self, name=None, init=None):
         super().__init__(name or self._get_next_name())
-        self.ready = False
-        self.busy = False
 
         self.worker = Worker(name=self.name, eager=True, init=init)
         self.worker.done.connect(self.onDone)
@@ -100,16 +99,14 @@ class Task(Object):
         self.busy = False
 
     def onDone(self, report: ReportDone):
-        """Overload this to handle results. Must call done()."""
-        self.done()
-
-    def done(self):
-        """Call this at the bottom of onDone()"""
+        """Overload this to handle results"""
         self.notification.emit(Notification.Info(f'{self.name} completed successfully!'))
         self.busy = False
+        self.done = True
 
     def start(self):
         """Slot for starting the task"""
+        print('OHAI')
         self.busy = True
         self.run()
 
@@ -120,6 +117,13 @@ class Task(Object):
         self.worker.reset()
         self.notification.emit(Notification.Warn('Cancelled by user.'))
         self.busy = False
+
+    def save_all(self):
+        """Slot for saving all results"""
+        try:
+            print('Save all')
+        except Exception as exception:
+            self.notification.emit(Notification.Fail(str(report.exception), ''))
 
     def readyTriggers(self) -> List[PropertyRef]:
         """Overload this to set properties as ready triggers"""

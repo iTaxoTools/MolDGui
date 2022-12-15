@@ -24,7 +24,7 @@ from itaxotools.common.utility import AttrDict, override
 
 from .. import app
 from ..model import Object
-from ..utility import Guard, bind, unbind
+from ..utility import Guard, Binder
 
 
 class ObjectView(QtWidgets.QFrame):
@@ -32,7 +32,7 @@ class ObjectView(QtWidgets.QFrame):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setStyleSheet("""ObjectView{background: Palette(Dark);}""")
-        self.bindings = set()
+        self.binder = Binder()
         self.object = None
 
     def setObject(self, object: Object):
@@ -43,17 +43,13 @@ class ObjectView(QtWidgets.QFrame):
         pass
 
     def bind(self, src, dst, proxy=None):
-        key = bind(src, dst, proxy)
-        self.bindings.add(key)
+        self.binder.bind(src, dst, proxy)
 
     def unbind(self, src, dst):
-        key = unbind(src, dst)
-        self.bindings.remove(key)
+        self.binder.unbind(src, dst)
 
     def unbind_all(self):
-        for key in self.bindings:
-            unbind(key.signal, key.slot)
-        self.bindings.clear()
+        self.binder.unbind_all()
 
 
 class TaskView(ObjectView):

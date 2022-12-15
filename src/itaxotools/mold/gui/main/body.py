@@ -21,6 +21,7 @@ from PySide6 import QtCore, QtWidgets
 from .. import app
 from ..view import MoldView
 from ..model import MoldModel
+from ..utility import Binder
 
 
 class ScrollArea(QtWidgets.QScrollArea):
@@ -34,9 +35,11 @@ class ScrollArea(QtWidgets.QScrollArea):
 class Body(QtWidgets.QStackedWidget):
     """Mirrors Taxi3 logic"""
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.actions = parent.actions
         self.areas = dict()
+        self.binder = Binder()
 
         self.addView(MoldModel, MoldView)
 
@@ -52,4 +55,14 @@ class Body(QtWidgets.QStackedWidget):
         view.setObject(object)
         self.setCurrentWidget(area)
         area.ensureVisible(0, 0)
+
+        self.binder.unbind_all()
+        self.binder.bind(self.actions.start.triggered, object.start)
+        self.binder.bind(self.actions.stop.triggered, object.stop)
+        self.binder.bind(self.actions.save.triggered, object.save_all)
+        self.binder.bind(object.properties.ready, self.actions.start.setEnabled)
+        self.binder.bind(object.properties.done, self.actions.save.setEnabled)
+        self.binder.bind(object.properties.busy, self.actions.start.setVisible, lambda busy: not busy)
+        self.binder.bind(object.properties.busy, self.actions.stop.setVisible)
+
         return True
