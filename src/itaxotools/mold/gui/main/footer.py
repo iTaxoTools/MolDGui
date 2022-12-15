@@ -16,31 +16,25 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
-"""GUI entry point"""
+from PySide6 import QtWidgets
 
 
-def run():
-    """
-    Show the MolD window and enter the main event loop.
-    Imports are made locally to optimize multiprocessing.
-    """
+class Footer(QtWidgets.QLabel):
 
-    from PySide6 import QtCore, QtWidgets
-
-    import sys
-
-    from .app import skin
-    from .main import Main
-
-    app = QtWidgets.QApplication(sys.argv)
-    app.setStyle('Fusion')
-    skin.apply(app)
-
-    files = [file for file in sys.argv[1:]]
-    main = Main(files=files)
-    main.setWindowFlags(QtCore.Qt.Window)
-    # Modality was causing mission control issues on Mac
-    # main.setModal(True)
-    main.show()
-
-    sys.exit(app.exec())
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setFixedHeight(24)
+        self.setStyleSheet("""
+            QLabel {
+                color: palette(Shadow);
+                background: palette(Window);
+                border: 0px solid transparent;
+                border-top: 1px solid palette(Dark);
+                padding: 5px 10px 5px 10px;
+                }
+            QLabel:disabled {
+                color: palette(Mid);
+                background: palette(Window);
+                border: 1px solid palette(Mid);
+                }
+            """)

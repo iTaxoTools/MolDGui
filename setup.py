@@ -39,6 +39,7 @@ setup(
     extras_require={
         "gui": [
             "PySide6>=6.4",
+            "itaxotools-common==0.2.dev4",
         ],
         "dev": [
             "pyinstaller>=5.7",
