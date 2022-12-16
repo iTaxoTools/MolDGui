@@ -21,7 +21,7 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 
 from ..utility import Property, Instance
-from ..types import Notification
+from ..types import Notification, TaxonSelectMode
 from .common import Task
 
 
@@ -29,7 +29,7 @@ def dummy_process(**kwargs):
     import time
     import itaxotools
     for k, v in kwargs.items():
-        print(k, v)
+        print(k, '=', v)
     print('...')
     for x in range(100):
         itaxotools.progress_handler(text='dummy', value=x+1, maximum=100)
@@ -42,6 +42,10 @@ def dummy_process(**kwargs):
 class MoldModel(Task):
     configuration_path = Property(Path, None)
     sequence_path = Property(Path, None)
+
+    taxon_mode = Property(TaxonSelectMode, TaxonSelectMode.All)
+    taxon_line = Property(str, '')
+    taxon_list = Property(str, '')
 
     def __init__(self, name=None):
         super().__init__(name)
@@ -59,7 +63,9 @@ class MoldModel(Task):
         self.exec(
             None,
             dummy_process,
-            foo=42
+            taxon_mode=repr(self.taxon_mode),
+            taxon_line=repr(self.taxon_line),
+            taxon_list=repr(self.taxon_list),
         )
 
     def open_configuration_path(self, path):
@@ -114,7 +120,7 @@ class MoldModel(Task):
             char = file.read(1)
             if char != '>':
                 self.notification.emit(Notification.Fail(
-                    error_caption + 'Sequences must be provided in the Fasta format, and the file must begin with the ">" symbol'))
+                    error_caption + 'Sequences must be provided in the Fasta format, and the file must begin with the ">" symbol.'))
                 return
 
             line = file.readline()

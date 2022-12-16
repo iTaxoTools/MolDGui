@@ -24,13 +24,35 @@ from itaxotools.common.utility import AttrDict, override
 from itaxotools.common.widgets import VLineSeparator
 
 from .. import app
-from .common import Card, TaskView, GLineEdit, LongLabel
+from ..types import TaxonSelectMode
+from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup
 
 
 def is_fasta(path):
     with open(path) as file:
         char = file.read(1)
         return char == '>'
+
+
+class GrowingTextEdit(GTextEdit):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setLineWrapMode(QtWidgets.QPlainTextEdit.NoWrap)
+        self.document().contentsChanged.connect(self.updateGeometry)
+        self.height_slack = 16
+        self.lines_max = 8
+
+    def getHeightHint(self):
+        lines = self.document().size().height()
+        lines = min(lines, self.lines_max)
+        height = self.fontMetrics().height()
+        return int(lines * height)
+
+    def sizeHint(self):
+        width = super().sizeHint().width()
+        height = self.getHeightHint() + 16
+        return QtCore.QSize(width, height)
 
 
 class TitleCard(Card):
@@ -57,7 +79,7 @@ class TitleCard(Card):
         galaxy = QtWidgets.QPushButton('Galaxy')
         homepage = QtWidgets.QPushButton('Homepage')
         itaxotools = QtWidgets.QPushButton('iTaxoTools')
-        itaxotools.setMinimumWidth(100)
+        itaxotools.setFixedWidth(100)
 
         buttons = QtWidgets.QVBoxLayout()
         buttons.addWidget(manual)
@@ -82,12 +104,10 @@ class InputSelector(Card):
 
     def __init__(self, label_text, placeholder_text, parent=None):
         super().__init__(parent)
-        # self.bindings = set()
-        # self.guard = Guard()
 
         label = QtWidgets.QLabel(label_text + ':')
         label.setStyleSheet("""font-size: 16px;""")
-        label.setMinimumWidth(174)
+        label.setFixedWidth(174)
 
         filename = GLineEdit()
         filename.setReadOnly(True)
@@ -105,6 +125,7 @@ class InputSelector(Card):
         browse.clicked.connect(self.browse)
 
         layout = QtWidgets.QHBoxLayout()
+        layout.setSpacing(32)
         layout.addWidget(label)
         layout.addSpacing(8)
         layout.addWidget(filename, 1)
@@ -132,6 +153,102 @@ class SequenceSelector(InputSelector):
         super().__init__('Sequence Data File', 'To begin, open a Fasta file that includes taxon identifiers', parent)
 
 
+class ModeSelector(Card):
+    toggled = QtCore.Signal()
+
+    def __init__(self, mode_text, mode_type, line_text, list_text, parent=None):
+        super().__init__(parent)
+        self.draw_modes(mode_text, mode_type)
+        self.draw_line(line_text)
+        self.draw_list(list_text)
+
+    def draw_modes(self, mode_text, mode_type):
+        label = QtWidgets.QLabel(mode_text + ':')
+        label.setStyleSheet("""font-size: 16px;""")
+        label.setFixedWidth(174)
+
+        group = RadioButtonGroup()
+        group.valueChanged.connect(self.handleToggle)
+        self.controls.mode = group
+
+        radios = QtWidgets.QHBoxLayout()
+        radios.setContentsMargins(0, 0, 0, 0)
+        radios.setSpacing(32)
+        for mode in mode_type:
+            button = QtWidgets.QRadioButton(str(mode))
+            radios.addWidget(button)
+            group.add(button, mode)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setSpacing(32)
+        layout.addWidget(label)
+        layout.addSpacing(8)
+        layout.addLayout(radios, 3)
+        layout.addStretch(1)
+        self.addLayout(layout)
+
+    def draw_line(self, line_text):
+        label = QtWidgets.QLabel(line_text)
+
+        line = GLineEdit()
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(label)
+        layout.addWidget(line, 1)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        self.addWidget(widget)
+
+        self.controls.section_line = widget
+        self.controls.line = line
+
+    def draw_list(self, list_text):
+        label = QtWidgets.QLabel(list_text)
+        label.setWordWrap(True)
+        label.setFixedWidth(174)
+        label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
+
+        list = GrowingTextEdit()
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setSpacing(32)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(label)
+        layout.addSpacing(8)
+        layout.addWidget(list, 1)
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        self.addWidget(widget)
+
+        self.controls.section_list = widget
+        self.controls.list = list
+
+    def setMode(self, mode):
+        self.controls.mode.setValue(mode)
+        QtCore.QTimer.singleShot(10, self.update)
+
+    def handleToggle(self, mode):
+        self.controls.section_line.setVisible(mode == TaxonSelectMode.Line)
+        self.controls.section_list.setVisible(mode == TaxonSelectMode.List)
+
+
+class TaxonSelector(ModeSelector):
+    def __init__(self, label_text, parent=None):
+        super().__init__(
+            mode_text = 'Taxon Selection',
+            mode_type = TaxonSelectMode,
+            line_text = 'List of taxa (comma-separated) that will be used as the qTaxa parameter of the active configuration:',
+            list_text = (
+                'Enter a list of taxa, separated either by new lines or commas. \n\n'
+                'Combine taxa using the plus ("+") symbol.'
+            ),
+            parent = parent,
+        )
+
+
 class MoldView(TaskView):
 
     def __init__(self, parent=None):
@@ -143,6 +260,7 @@ class MoldView(TaskView):
         self.cards.title = TitleCard(self)
         self.cards.configuration = ConfigSelector(self)
         self.cards.sequence = SequenceSelector(self)
+        self.cards.taxa = TaxonSelector(self)
 
         layout = QtWidgets.QVBoxLayout()
         for card in self.cards:
@@ -156,6 +274,9 @@ class MoldView(TaskView):
         self.object = object
         self.binder.unbind_all()
 
+        self.binder.bind(self.cards.configuration.browse, self.openConfiguration)
+        self.binder.bind(self.cards.sequence.browse, self.openSequence)
+
         self.binder.bind(object.notification, self.showNotification)
         # self.bind(object.progression, self.cards.progress.showProgress)
 
@@ -163,8 +284,14 @@ class MoldView(TaskView):
         self.binder.bind(object.properties.configuration_path, self.cards.configuration.setPath)
         self.binder.bind(object.properties.sequence_path, self.cards.sequence.setPath)
 
-        self.binder.bind(self.cards.configuration.browse, self.openConfiguration)
-        self.binder.bind(self.cards.sequence.browse, self.openSequence)
+        self.binder.bind(self.cards.taxa.toggled, object.properties.taxon_mode)
+        self.binder.bind(object.properties.taxon_mode, self.cards.taxa.setMode)
+
+        self.binder.bind(self.cards.taxa.controls.line.textEditedSafe, object.properties.taxon_line)
+        self.binder.bind(object.properties.taxon_line, self.cards.taxa.controls.line.setText)
+
+        self.binder.bind(self.cards.taxa.controls.list.textEditedSafe, object.properties.taxon_list)
+        self.binder.bind(object.properties.taxon_list, self.cards.taxa.controls.list.setText)
 
     def open(self):
         path = self.getOpenPath()

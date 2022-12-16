@@ -16,25 +16,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
-from collections import namedtuple
-from enum import Enum
-
-from ._type import Type
+from enum import Enum, auto
 
 
-class Notification(Type):
-    def __init__(self, text: str, info: str = ''):
-        self.text = text
-        self.info = info
+class TaxonSelectMode(Enum):
+    All = 'All taxa'
+    List = 'From taxon list'
+    Line = 'From configuration line'
 
-
-class Info(Notification):
-    pass
-
-
-class Warn(Notification):
-    pass
-
-
-class Fail(Notification):
-    pass
+    def __str__(self):
+        return self.value

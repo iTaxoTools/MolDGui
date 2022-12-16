@@ -86,7 +86,7 @@ class Card(QtWidgets.QFrame):
 
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(24)
-        layout.setContentsMargins(16, 8, 16, 8)
+        layout.setContentsMargins(16, 10, 16, 10)
         self.setLayout(layout)
 
     def addWidget(self, widget):
@@ -152,6 +152,26 @@ class GLineEdit(QtWidgets.QLineEdit):
         super().setText(text)
 
 
+class GTextEdit(QtWidgets.QPlainTextEdit):
+
+    textEditedSafe = QtCore.Signal(str)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.textChanged.connect(self._handleEdit)
+        self._guard = Guard()
+
+    def _handleEdit(self):
+        with self._guard:
+            self.textEditedSafe.emit(self.toPlainText())
+
+    @override
+    def setText(self, text):
+        if self._guard:
+            return
+        super().setPlainText(text)
+
+
 class GSpinBox(QtWidgets.QSpinBox):
 
     valueChangedSafe = QtCore.Signal(int)
@@ -203,3 +223,27 @@ class LongLabel(QtWidgets.QLabel):
 
     def select(self):
         self.setSelection(0, len(self.text()))
+
+
+class RadioButtonGroup(QtCore.QObject):
+    valueChanged = QtCore.Signal(object)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.members = dict()
+        self.value = None
+
+    def add(self, widget, value):
+        self.members[widget] = value
+        widget.toggled.connect(self.handleToggle)
+
+    def handleToggle(self, checked):
+        if not checked:
+            return
+        self.value = self.members[self.sender()]
+        self.valueChanged.emit(self.value)
+
+    def setValue(self, newValue):
+        self.value = newValue
+        for widget, value in self.members.items():
+            widget.setChecked(value == newValue)
