@@ -24,7 +24,7 @@ from itaxotools.common.utility import AttrDict, override
 from itaxotools.common.widgets import VLineSeparator
 
 from .. import app
-from ..types import TaxonSelectMode
+from ..types import TaxonSelectMode, PairwiseSelectMode
 from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup
 
 
@@ -189,6 +189,7 @@ class ModeSelector(Card):
 
     def draw_line(self, line_text):
         label = QtWidgets.QLabel(line_text)
+        label.setWordWrap(True)
 
         line = GLineEdit()
 
@@ -231,12 +232,12 @@ class ModeSelector(Card):
         QtCore.QTimer.singleShot(10, self.update)
 
     def handleToggle(self, mode):
-        self.controls.section_line.setVisible(mode == TaxonSelectMode.Line)
-        self.controls.section_list.setVisible(mode == TaxonSelectMode.List)
+        self.controls.section_line.setVisible(True)
+        self.controls.section_list.setVisible(True)
 
 
 class TaxonSelector(ModeSelector):
-    def __init__(self, label_text, parent=None):
+    def __init__(self, parent=None):
         super().__init__(
             mode_text = 'Taxon Selection',
             mode_type = TaxonSelectMode,
@@ -247,6 +248,31 @@ class TaxonSelector(ModeSelector):
             ),
             parent = parent,
         )
+
+    def handleToggle(self, mode):
+        self.controls.section_line.setVisible(mode == TaxonSelectMode.Line)
+        self.controls.section_list.setVisible(mode == TaxonSelectMode.List)
+
+
+class PairwiseSelector(ModeSelector):
+    def __init__(self, parent=None):
+        super().__init__(
+            mode_text = 'Pairwise Selection',
+            mode_type = PairwiseSelectMode,
+            line_text = (
+                'List of taxon pairs (comma-separated) that will be used as the qTaxa parameter of the active configuration. '
+                'This is appended to any other qTaxa options from taxon selection above.'
+            ),
+            list_text = (
+                'Enter a list of taxon pairs, separated either by new lines or commas. \n\n'
+                'Combine taxa using the plus ("+") symbol.'
+            ),
+            parent = parent,
+        )
+
+    def handleToggle(self, mode):
+        self.controls.section_line.setVisible(mode == PairwiseSelectMode.Line)
+        self.controls.section_list.setVisible(mode == PairwiseSelectMode.List)
 
 
 class MoldView(TaskView):
@@ -261,6 +287,7 @@ class MoldView(TaskView):
         self.cards.configuration = ConfigSelector(self)
         self.cards.sequence = SequenceSelector(self)
         self.cards.taxa = TaxonSelector(self)
+        self.cards.pairs = PairwiseSelector(self)
 
         layout = QtWidgets.QVBoxLayout()
         for card in self.cards:
@@ -286,12 +313,17 @@ class MoldView(TaskView):
 
         self.binder.bind(self.cards.taxa.toggled, object.properties.taxon_mode)
         self.binder.bind(object.properties.taxon_mode, self.cards.taxa.setMode)
-
         self.binder.bind(self.cards.taxa.controls.line.textEditedSafe, object.properties.taxon_line)
         self.binder.bind(object.properties.taxon_line, self.cards.taxa.controls.line.setText)
-
         self.binder.bind(self.cards.taxa.controls.list.textEditedSafe, object.properties.taxon_list)
         self.binder.bind(object.properties.taxon_list, self.cards.taxa.controls.list.setText)
+
+        self.binder.bind(self.cards.pairs.toggled, object.properties.pairs_mode)
+        self.binder.bind(object.properties.pairs_mode, self.cards.pairs.setMode)
+        self.binder.bind(self.cards.pairs.controls.line.textEditedSafe, object.properties.pairs_line)
+        self.binder.bind(object.properties.pairs_line, self.cards.pairs.controls.line.setText)
+        self.binder.bind(self.cards.pairs.controls.list.textEditedSafe, object.properties.pairs_list)
+        self.binder.bind(object.properties.pairs_list, self.cards.pairs.controls.list.setText)
 
     def open(self):
         path = self.getOpenPath()

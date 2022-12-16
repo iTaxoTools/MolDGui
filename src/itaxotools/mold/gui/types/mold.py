@@ -26,3 +26,12 @@ class TaxonSelectMode(Enum):
 
     def __str__(self):
         return self.value
+
+
+class PairwiseSelectMode(Enum):
+    All = 'All pairs'
+    List = 'From pair list'
+    Line = 'From configuration line'
+
+    def __str__(self):
+        return self.value
