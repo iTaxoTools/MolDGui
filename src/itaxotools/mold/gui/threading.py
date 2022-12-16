@@ -19,8 +19,10 @@
 from PySide6 import QtCore
 
 from collections import deque
+from typing import Callable
 import multiprocessing as mp
 import sys
+import io
 
 from itaxotools.common.utility import override
 
@@ -206,3 +208,33 @@ class Worker(QtCore.QThread):
 
         super().quit()
         self.wait()
+
+
+class TextEditLoggerIO(io.IOBase):
+    """File-like object that writes to TextEditLogger"""
+
+    def __init__(self, func: Callable[[str], None]):
+        super().__init__()
+        self.func = func
+
+    def close(self):
+        pass
+
+    def flush(self):
+        pass
+
+    def readable(self):
+        return False
+
+    def writeable(self):
+        return True
+
+    def write(self, text):
+        self.func(text)
+
+    def writeline(self, line):
+        self.write(line+'\n')
+
+    def writelines(self, lines):
+        for line in lines:
+            self.writeline(line)

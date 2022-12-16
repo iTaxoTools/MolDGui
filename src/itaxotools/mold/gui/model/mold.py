@@ -16,6 +16,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
+from PySide6 import QtCore
+
 from datetime import datetime
 from tempfile import TemporaryDirectory
 from pathlib import Path
@@ -23,6 +25,7 @@ from pathlib import Path
 from ..files import check_sequence_file, parse_configuration_file
 from ..utility import Property, Instance
 from ..types import Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
+from ..threading import TextEditLoggerIO
 from .common import Task
 
 
@@ -54,6 +57,9 @@ def main_wrapper(workdir: Path, **kwargs):
 class MoldModel(Task):
     task_name = 'MolD'
 
+    lineLogged = QtCore.Signal(str)
+    clearLogs = QtCore.Signal()
+
     configuration_path = Property(Path, None)
     sequence_path = Property(Path, None)
 
@@ -71,9 +77,13 @@ class MoldModel(Task):
 
     def __init__(self, name=None):
         super().__init__(name)
-
         self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_')
         self.temporary_path = Path(self.temporary_directory.name)
+        self.textLogIO = TextEditLoggerIO(self.logLine)
+        self.worker.setStream(self.textLogIO)
+
+    def logLine(self, text):
+        self.lineLogged.emit(text)
 
     def readyTriggers(self):
         return [
@@ -111,6 +121,8 @@ class MoldModel(Task):
     def start(self):
         self.busy = True
         self.busy_main = True
+        self.clearLogs.emit()
+
         timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
         work_dir = self.temporary_path / timestamp
         work_dir.mkdir()

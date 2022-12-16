@@ -50,6 +50,20 @@ class GrowingTextEdit(GTextEdit):
         return QtCore.QSize(width, height)
 
 
+class TextEditLogger(QtWidgets.QPlainTextEdit):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setReadOnly(True)
+
+    def append(self, text):
+        self.moveCursor(QtGui.QTextCursor.End)
+        self.insertPlainText(text)
+        sb = self.verticalScrollBar()
+        sb.setValue(sb.maximum())
+        self.moveCursor(QtGui.QTextCursor.End)
+
+
 class TitleCard(Card):
     run = QtCore.Signal()
     cancel = QtCore.Signal()
@@ -373,6 +387,7 @@ class MoldView(TaskView):
     def draw(self):
         self.cards = AttrDict()
         self.cards.title = TitleCard(self)
+        self.cards.logger = TextEditLogger(self)
         self.cards.configuration = ConfigSelector(self)
         self.cards.sequence = SequenceSelector(self)
         self.cards.taxa = TaxonSelector(self)
@@ -396,6 +411,8 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.sequence.browse, self.openSequence)
 
         self.binder.bind(object.properties.busy, self.setBusy)
+        self.binder.bind(object.lineLogged, self.cards.logger.append)
+        self.binder.bind(object.clearLogs, self.cards.logger.clear)
         self.binder.bind(object.notification, self.showNotification)
         # self.bind(object.progression, self.cards.progress.showProgress)
 
@@ -425,8 +442,9 @@ class MoldView(TaskView):
 
     def setBusy(self, busy):
         for card in self.cards:
-            if card != self.cards.title:
+            if card != self.cards.title and card != self.cards.logger:
                 card.setEnabled(not busy)
+        self.cards.logger.setVisible(busy)
 
     def open(self):
         path = self.getOpenPath('Open sequences or configuration file')
