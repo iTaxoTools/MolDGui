@@ -712,7 +712,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
             t1 = apair[0]
             t2 = apair[1]
             p2records = [i for i in raw_records if i[1] in [t1, t2]]
-            print('\n**************', t1, 'VS', t2,'**************')
+            # print('\n**************', t1, 'VS', t2,'**************')
             print('<h4>**************', t1, 'VS', t2, '**************</h4>', file=h)
             C2, css2, sp2 = Step1(p2records)#STEP1
             x2,y2,z2,pures2 = C_VP_PP(css2, t1, sp2, '>0')#STEP2 ####! added pures
@@ -721,7 +721,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
             for site in pures2:
                 counterPures[site] = "'or'".join(list(set([thing[site] for thing in css2[t2] if thing[site] != 'N'])))
                 Pairphrase = Pairphrase + str(site+corr)+" ('"+str(y2[site])+"' vs '"+str(counterPures[site])+"'), "
-            print(Pairphrase[:-2])
+            # print(Pairphrase[:-2])
             print("<p>",Pairphrase[:-2],'</h4>', file=h)#OCT2022
             x2r,y2r,z2r,pures2r = C_VP_PP(css2, t2, sp2, '>0')#STEP2 ####! added pures
             Pairphraser = 'Each of the following '+ str(len(pures2r))+' sites is invariant across sequences of '+ t2+ ' and differentiates it from '+ t1+': '
@@ -729,7 +729,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
             for site in pures2r:
                 counterPuresr[site] = "'or'".join(list(set([thing[site] for thing in css2[t1] if thing[site] != 'N'])))
                 Pairphraser = Pairphraser + str(site+corr)+" ('"+str(y2r[site])+"' vs '"+str(counterPuresr[site])+"'), "
-            print(Pairphraser[:-2])
+            # print(Pairphraser[:-2])
             print("<p>",Pairphraser[:-2],'</h4>', file=h)#OCT2022
         h.close()
 
