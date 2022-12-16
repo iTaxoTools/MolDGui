@@ -62,5 +62,5 @@ class GapsAsCharacters(Enum):
 
 
 class MoldResults(NamedTuple):
-    output: Path | None
+    diagnosis: Path | None
     pairwise: Path | None

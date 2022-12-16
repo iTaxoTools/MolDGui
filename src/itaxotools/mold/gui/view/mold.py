@@ -55,7 +55,7 @@ class TextEditLogger(QtWidgets.QPlainTextEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setReadOnly(True)
-        
+
     def wheelEvent(self, event):
         event.ignore()
 
@@ -178,14 +178,13 @@ class InputSelector(Card):
         browse.clicked.connect(self.browse)
 
         layout = QtWidgets.QHBoxLayout()
-        layout.setSpacing(32)
+        layout.setSpacing(16)
         layout.addWidget(label)
-        layout.addSpacing(8)
+        layout.addSpacing(24)
         layout.addWidget(filename, 1)
         layout.addWidget(browse)
         self.addLayout(layout)
 
-        self.controls.label = label
         self.controls.filename = filename
         self.controls.browse = browse
 
@@ -407,6 +406,62 @@ class GapsAsCharactersSelector(Card):
         self.controls.gaps.setValue(mode)
 
 
+class ResultViewer(Card):
+    view = QtCore.Signal(str, Path)
+    save = QtCore.Signal(str, Path)
+
+    def __init__(self, label_text, parent=None):
+        super().__init__(parent)
+        self.text = label_text
+        self.path = None
+
+        label = QtWidgets.QLabel(label_text)
+        label.setStyleSheet("""font-size: 16px;""")
+
+        check = QtWidgets.QLabel('\u2714')
+        check.setStyleSheet("""font-size: 16px; color: Palette(Highlight);""")
+
+        view = QtWidgets.QPushButton('View')
+        view.clicked.connect(self.handleView)
+
+        save = QtWidgets.QPushButton('Save')
+        save.clicked.connect(self.handleSave)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setSpacing(0)
+        layout.addWidget(check)
+        layout.addSpacing(12)
+        layout.addWidget(label)
+        layout.addStretch(1)
+        layout.addWidget(view)
+        layout.addSpacing(16)
+        layout.addWidget(save)
+        self.addLayout(layout)
+
+        self.controls.view = view
+        self.controls.save = save
+
+    def setPath(self, path):
+        self.path = path
+        self.setVisible(path is not None)
+
+    def handleView(self):
+        self.view.emit(self.text, self.path)
+
+    def handleSave(self):
+        self.save.emit(self.text, self.path)
+
+
+class DiagnosisViewer(ResultViewer):
+    def __init__(self, parent=None):
+        super().__init__('Molecular Diagnosis', parent)
+
+
+class PairwiseViewer(ResultViewer):
+    def __init__(self, parent=None):
+        super().__init__('Pairwise Analysis', parent)
+
+
 class MoldView(TaskView):
 
     def __init__(self, parent=None):
@@ -416,6 +471,8 @@ class MoldView(TaskView):
     def draw(self):
         self.cards = AttrDict()
         self.cards.title = TitleCard(self)
+        self.cards.diagnosis = DiagnosisViewer(self)
+        self.cards.pairwise = PairwiseViewer(self)
         self.cards.progress = ProgressCard(self)
         self.cards.configuration = ConfigSelector(self)
         self.cards.sequence = SequenceSelector(self)
@@ -469,6 +526,14 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.gaps.toggled, object.properties.gaps_as_characters)
         self.binder.bind(object.properties.gaps_as_characters, self.cards.gaps.setMode)
 
+        self.binder.bind(object.properties.result_diagnosis, self.cards.diagnosis.setPath)
+        self.binder.bind(object.properties.result_pairwise, self.cards.pairwise.setPath)
+
+        self.binder.bind(self.cards.diagnosis.view, self.viewResult)
+        self.binder.bind(self.cards.diagnosis.save, self.saveResult)
+        self.binder.bind(self.cards.pairwise.view, self.viewResult)
+        self.binder.bind(self.cards.pairwise.save, self.saveResult)
+
     def handleStarted(self):
         self.cards.progress.controls.logger.clear()
         self.parent().parent().verticalScrollBar().setValue(0)
@@ -497,6 +562,12 @@ class MoldView(TaskView):
         path = self.getOpenPath('Open sequence file', filter='Fasta Sequences (*.*)')
         if path is not None:
             self.object.open_sequence_path(path)
+
+    def viewResult(self, text, path):
+        print('> view', text, path)
+
+    def saveResult(self, text, path):
+        print('> save', text, path)
 
     def save(self):
         path = self.getSavePath('Save all')

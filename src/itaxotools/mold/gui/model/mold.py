@@ -74,6 +74,8 @@ class MoldModel(Task):
     taxon_rank = Property(TaxonRank, TaxonRank.Species)
     gaps_as_characters = Property(GapsAsCharacters, GapsAsCharacters.Yes)
 
+    result_diagnosis = Property(Path, None)
+    result_pairwise = Property(Path, None)
 
     def __init__(self, name=None):
         super().__init__(name)
@@ -163,7 +165,8 @@ class MoldModel(Task):
 
     def onDone(self, report):
         super().onDone(report)
-        print(report.result)
+        self.result_diagnosis = report.result.diagnosis
+        self.result_pairwise = report.result.pairwise
 
     def open_configuration_path(self, path):
         try:
