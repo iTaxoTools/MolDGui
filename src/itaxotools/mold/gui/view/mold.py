@@ -156,14 +156,21 @@ class SequenceSelector(InputSelector):
 class ModeSelector(Card):
     toggled = QtCore.Signal()
 
-    def __init__(self, mode_text, mode_type, line_text, list_text, parent=None):
-        super().__init__(parent)
-        self.draw_modes(mode_text, mode_type)
-        self.draw_line(line_text)
-        self.draw_list(list_text)
+    modes = []
+    mode_text = 'Mode Selection'
+    line_text = 'Line text:'
+    list_text = 'List text.'
+    line_placeholder = 'Line placeholder...'
+    list_placeholder = 'List placeholder...'
 
-    def draw_modes(self, mode_text, mode_type):
-        label = QtWidgets.QLabel(mode_text + ':')
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.draw_modes()
+        self.draw_line()
+        self.draw_list()
+
+    def draw_modes(self):
+        label = QtWidgets.QLabel(self.mode_text + ':')
         label.setStyleSheet("""font-size: 16px;""")
         label.setFixedWidth(174)
 
@@ -174,7 +181,7 @@ class ModeSelector(Card):
         radios = QtWidgets.QHBoxLayout()
         radios.setContentsMargins(0, 0, 0, 0)
         radios.setSpacing(32)
-        for mode in mode_type:
+        for mode in self.modes:
             button = QtWidgets.QRadioButton(str(mode))
             radios.addWidget(button)
             group.add(button, mode)
@@ -187,11 +194,11 @@ class ModeSelector(Card):
         layout.addStretch(1)
         self.addLayout(layout)
 
-    def draw_line(self, line_text):
-        label = QtWidgets.QLabel(line_text)
-        label.setWordWrap(True)
+    def draw_line(self):
+        label = LongLabel(self.line_text)
 
         line = GLineEdit()
+        line.setPlaceholderText(self.line_placeholder)
 
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -205,13 +212,13 @@ class ModeSelector(Card):
         self.controls.section_line = widget
         self.controls.line = line
 
-    def draw_list(self, list_text):
-        label = QtWidgets.QLabel(list_text)
-        label.setWordWrap(True)
+    def draw_list(self):
+        label = LongLabel(self.list_text)
         label.setFixedWidth(174)
         label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
         list = GrowingTextEdit()
+        list.setPlaceholderText(self.list_placeholder)
 
         layout = QtWidgets.QHBoxLayout()
         layout.setSpacing(32)
@@ -237,17 +244,18 @@ class ModeSelector(Card):
 
 
 class TaxonSelector(ModeSelector):
+    modes = TaxonSelectMode
+    mode_text = 'Taxon Selection'
+    line_text = 'List of taxa (comma-separated) or other pattern that will be used as the qTaxa parameter of the active configuration:'
+    list_text = (
+        'Enter a list of taxa, separated by new lines. \n\n'
+        'Combine taxa using the plus ("+") symbol.'
+    )
+    line_placeholder = 'ALL, >N, P:pattern, P+:pattern, Taxon1, Taxon2+Taxon3, ...'
+    list_placeholder = 'Taxon1\nTaxon2+Taxon3\nTaxon4+Taxon5+Taxon6\n...'
+
     def __init__(self, parent=None):
-        super().__init__(
-            mode_text = 'Taxon Selection',
-            mode_type = TaxonSelectMode,
-            line_text = 'List of taxa (comma-separated) that will be used as the qTaxa parameter of the active configuration:',
-            list_text = (
-                'Enter a list of taxa, separated either by new lines or commas. \n\n'
-                'Combine taxa using the plus ("+") symbol.'
-            ),
-            parent = parent,
-        )
+        super().__init__(parent)
 
     def handleToggle(self, mode):
         self.controls.section_line.setVisible(mode == TaxonSelectMode.Line)
@@ -255,20 +263,21 @@ class TaxonSelector(ModeSelector):
 
 
 class PairwiseSelector(ModeSelector):
+    modes = PairwiseSelectMode
+    mode_text = 'Pairwise Selection'
+    line_text = (
+        'List of taxon pairs (comma-separated) or other pattern that will be used as the qTaxa parameter of the active configuration. '
+        'This is appended to any other qTaxa options from the taxon selection above.'
+    )
+    list_text = (
+        'Enter a list of taxon pairs, joined with "VS", separated by new lines. \n\n'
+        'Many pairs can be defined at once by using multiple "VS" in one line.'
+    )
+    line_placeholder = 'Taxon1VSALL, Taxon2VSTaxon3, Taxon4VSTaxon5VSTaxon6, ...'
+    list_placeholder = 'Taxon1VSALL\nTaxon2VSTaxon3\nTaxon4VSTaxon5VSTaxon6\n...'
+
     def __init__(self, parent=None):
-        super().__init__(
-            mode_text = 'Pairwise Selection',
-            mode_type = PairwiseSelectMode,
-            line_text = (
-                'List of taxon pairs (comma-separated) that will be used as the qTaxa parameter of the active configuration. '
-                'This is appended to any other qTaxa options from taxon selection above.'
-            ),
-            list_text = (
-                'Enter a list of taxon pairs, separated either by new lines or commas. \n\n'
-                'Combine taxa using the plus ("+") symbol.'
-            ),
-            parent = parent,
-        )
+        super().__init__(parent)
 
     def handleToggle(self, mode):
         self.controls.section_line.setVisible(mode == PairwiseSelectMode.Line)
