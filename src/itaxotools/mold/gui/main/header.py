@@ -70,7 +70,7 @@ class ToolBar(QtWidgets.QToolBar):
                 border: 1px solid transparent;
                 }
             QToolButton:disabled {
-                color: palette(Dark);
+                color: palette(Mid);
                 }
             QToolButton:pressed {
                 background: palette(Midlight);

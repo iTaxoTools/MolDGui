@@ -679,3 +679,10 @@ class MoldView(TaskView):
         path = self.getExistingDirectory('Save All', str(self.object.suggested_directory))
         if path:
             self.object.save_all(path)
+
+    def start(self):
+        self.object.start()
+
+    def stop(self):
+        if self.getConfirmation('Stop', 'Are you sure you want to stop the ongoing diagnosis?'):
+            self.object.stop()

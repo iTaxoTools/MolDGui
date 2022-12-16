@@ -60,9 +60,8 @@ class Body(QtWidgets.QStackedWidget):
 
         self.binder.bind(self.actions.open.triggered, view.open)
         self.binder.bind(self.actions.save.triggered, view.save)
-
-        self.binder.bind(self.actions.start.triggered, object.start)
-        self.binder.bind(self.actions.stop.triggered, object.stop)
+        self.binder.bind(self.actions.start.triggered, view.start)
+        self.binder.bind(self.actions.stop.triggered, view.stop)
 
         self.binder.bind(object.properties.ready, self.actions.start.setEnabled)
         self.binder.bind(object.properties.done, self.actions.save.setEnabled)

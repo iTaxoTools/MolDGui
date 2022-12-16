@@ -200,6 +200,12 @@ class MoldModel(Task):
             thresh = 75,
         )
 
+    def stop(self):
+        if self.worker is None:
+            return
+        self.worker.reset()
+        self.busy = False
+
     def onDone(self, report):
         super().onDone(report)
         self.result_diagnosis = report.result.diagnosis
