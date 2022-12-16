@@ -20,6 +20,7 @@ from PySide6 import QtCore
 
 from datetime import datetime
 from tempfile import TemporaryDirectory
+from itertools import chain
 from pathlib import Path
 
 from ..files import check_sequence_file, parse_configuration_file
@@ -29,18 +30,10 @@ from ..threading import TextEditLoggerIO
 from .common import Task
 
 
-def dummy_process(**kwargs):
-    import time
-    import itaxotools
-    for k, v in kwargs.items():
-        print(k, '=', v)
-    print('...')
-    for x in range(100):
-        itaxotools.progress_handler(text='dummy', value=x+1, maximum=100)
-        time.sleep(0.02)
-
-    print('Done!~')
-    return 42
+def condense(text: str, separator: str):
+    split = text.split(separator)
+    stripped = (x.strip() for x in split)
+    return separator.join(stripped)
 
 
 def main_wrapper(workdir: Path, **kwargs):
@@ -154,6 +147,13 @@ class MoldModel(Task):
             qTaxa.append(self.pairs_line)
         elif self.pairs_mode == PairwiseSelectMode.List:
             qTaxa.append(self.pairs_list.replace('\n', ','))
+
+        qTaxa = chain.from_iterable(x.split(',') for x in qTaxa)
+        qTaxa = (entry.strip() for entry in qTaxa)
+        qTaxa = (condense(x, 'VS') for x in qTaxa)
+        qTaxa = (condense(x, '+') for x in qTaxa)
+        qTaxa = (x for x in qTaxa if x)
+        qTaxa = list(qTaxa)
 
         self.exec(
             None,
