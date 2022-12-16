@@ -58,7 +58,7 @@ class MoldModel(Task):
     task_name = 'MolD'
 
     lineLogged = QtCore.Signal(str)
-    clearLogs = QtCore.Signal()
+    started = QtCore.Signal()
 
     configuration_path = Property(Path, None)
     sequence_path = Property(Path, None)
@@ -121,7 +121,7 @@ class MoldModel(Task):
     def start(self):
         self.busy = True
         self.busy_main = True
-        self.clearLogs.emit()
+        self.started.emit()
 
         timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
         work_dir = self.temporary_path / timestamp

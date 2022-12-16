@@ -55,6 +55,9 @@ class TextEditLogger(QtWidgets.QPlainTextEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setReadOnly(True)
+        
+    def wheelEvent(self, event):
+        event.ignore()
 
     def append(self, text):
         self.moveCursor(QtGui.QTextCursor.End)
@@ -121,6 +124,32 @@ class TitleCard(Card):
 
     def openItaxotools(self):
         QtGui.QDesktopServices.openUrl(app.itaxotools_url)
+
+
+class ProgressCard(Card):
+
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        label = QtWidgets.QLabel('Diagnosing sequences, please hold on...')
+        label.setStyleSheet("""font-size: 16px;""")
+
+        bar = QtWidgets.QProgressBar()
+        bar.setMaximum(0)
+        bar.setMinimum(0)
+        bar.setValue(0)
+
+        logger = TextEditLogger()
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setSpacing(8)
+        layout.addWidget(label)
+        layout.addWidget(bar)
+        layout.addWidget(logger, 1)
+        self.addLayout(layout)
+
+        self.controls.bar = bar
+        self.controls.logger = logger
 
 
 class InputSelector(Card):
@@ -387,7 +416,7 @@ class MoldView(TaskView):
     def draw(self):
         self.cards = AttrDict()
         self.cards.title = TitleCard(self)
-        self.cards.logger = TextEditLogger(self)
+        self.cards.progress = ProgressCard(self)
         self.cards.configuration = ConfigSelector(self)
         self.cards.sequence = SequenceSelector(self)
         self.cards.taxa = TaxonSelector(self)
@@ -411,8 +440,8 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.sequence.browse, self.openSequence)
 
         self.binder.bind(object.properties.busy, self.setBusy)
-        self.binder.bind(object.lineLogged, self.cards.logger.append)
-        self.binder.bind(object.clearLogs, self.cards.logger.clear)
+        self.binder.bind(object.lineLogged, self.cards.progress.controls.logger.append)
+        self.binder.bind(object.started, self.handleStarted)
         self.binder.bind(object.notification, self.showNotification)
         # self.bind(object.progression, self.cards.progress.showProgress)
 
@@ -440,11 +469,15 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.gaps.toggled, object.properties.gaps_as_characters)
         self.binder.bind(object.properties.gaps_as_characters, self.cards.gaps.setMode)
 
+    def handleStarted(self):
+        self.cards.progress.controls.logger.clear()
+        self.parent().parent().verticalScrollBar().setValue(0)
+
     def setBusy(self, busy):
         for card in self.cards:
-            if card != self.cards.title and card != self.cards.logger:
+            if card != self.cards.title and card != self.cards.progress:
                 card.setEnabled(not busy)
-        self.cards.logger.setVisible(busy)
+        self.cards.progress.setVisible(busy)
 
     def open(self):
         path = self.getOpenPath('Open sequences or configuration file')

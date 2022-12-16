@@ -204,7 +204,6 @@ class LongLabel(QtWidgets.QLabel):
         self.setWordWrap(True)
 
         action = QtGui.QAction('&Copy', self)
-        action.setShortcut(QtGui.QKeySequence.Copy)
         action.triggered.connect(self.copy)
         self.addAction(action)
 
@@ -213,7 +212,6 @@ class LongLabel(QtWidgets.QLabel):
         self.addAction(action)
 
         action = QtGui.QAction('Select &All', self)
-        action.setShortcut(QtGui.QKeySequence.SelectAll)
         action.triggered.connect(self.select)
         self.addAction(action)
 
