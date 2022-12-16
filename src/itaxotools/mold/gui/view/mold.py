@@ -500,6 +500,48 @@ class ResultViewer(Card):
         self.save.emit(self.text, self.path)
 
 
+class ResultDialog(QtWidgets.QDialog):
+    save = QtCore.Signal(Path)
+
+    def __init__(self, text, path, parent):
+        super().__init__(parent)
+        self.path = path
+
+        self.setWindowFlag(QtCore.Qt.WindowMaximizeButtonHint, True)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.setWindowTitle(app.title + ' - ' + text)
+        self.resize(460, 680)
+        self.setModal(True)
+
+        viewer = QtWidgets.QTextBrowser()
+        # viewer.setStyleSheet("""QTextBrowser{margin: 12px;}""")
+        with open(path) as file:
+            viewer.setHtml(file.read())
+
+        save = QtWidgets.QPushButton('Save')
+        save.clicked.connect(self.handleSave)
+
+        close = QtWidgets.QPushButton('Close')
+        close.clicked.connect(self.reject)
+        close.setDefault(True)
+
+        buttons = QtWidgets.QHBoxLayout()
+        buttons.addStretch(1)
+        buttons.addWidget(save)
+        buttons.addWidget(close)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(12)
+        layout.addWidget(viewer)
+        layout.addLayout(buttons)
+
+        self.setLayout(layout)
+
+    def handleSave(self):
+        self.save.emit(self.path)
+
+
 class DiagnosisViewer(ResultViewer):
     def __init__(self, parent=None):
         super().__init__('Molecular Diagnosis', parent)
@@ -613,7 +655,8 @@ class MoldView(TaskView):
             self.object.open_sequence_path(path)
 
     def viewResult(self, text, path):
-        print('> view', text, path)
+        dialog = ResultDialog(text, path, self.window())
+        dialog.show()
 
     def saveResult(self, text, path):
         print('> save', text, path)
