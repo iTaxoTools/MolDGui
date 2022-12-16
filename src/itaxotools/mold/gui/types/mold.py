@@ -41,24 +41,30 @@ class PairwiseSelectMode(Enum):
         return self.value
 
 
-class TaxonRank(Enum):
+class TaxonRank(str, Enum):
     Species = '1', 'Species:', 'up to 1% divergence from original'
     Supraspecific = '2', 'Supraspecific taxa:', 'up to 5% divergence from original'
 
-    def __init__(self, code, label, description):
-        self.code = code
-        self.label = label
-        self.description = description
+    def __new__(cls, code, label, description):
+        obj = str.__new__(cls, code)
+        obj._value_ = code
+        obj.code = code
+        obj.label = label
+        obj.description = description
+        return obj
 
 
-class GapsAsCharacters(Enum):
+class GapsAsCharacters(str, Enum):
     Yes = 'Yes', 'Yes:', 'gaps ("-") are transformed into "D" and treated as independent characters'
     No = 'No', 'No:', 'gaps ("-") are treated as missing data ("N")'
 
-    def __init__(self, code, label, description):
-        self.code = code
-        self.label = label
-        self.description = description
+    def __new__(cls, code, label, description):
+        obj = str.__new__(cls, code)
+        obj._value_ = code
+        obj.code = code
+        obj.label = label
+        obj.description = description
+        return obj
 
 
 class MoldResults(NamedTuple):

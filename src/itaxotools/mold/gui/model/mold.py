@@ -37,12 +37,23 @@ def condense(text: str, separator: str):
     return separator.join(stripped)
 
 
-def main_wrapper(workdir: Path, **kwargs):
+def inflate(text: str, separator: str):
+    split = text.split(separator)
+    stripped = (x.strip() for x in split)
+    return f' {separator} '.join(stripped)
+
+
+def main_wrapper(workdir: Path, confdir: Path, input_path: Path, **kwargs):
     from itaxotools.mold import main
 
     output_path = workdir / 'out.html'
     pairwise_path = workdir / 'out_pairwise.html'
-    main(outfname=str(output_path), **kwargs)
+
+    if confdir and not input_path.exists() and not input_path.is_absolute():
+        input_path = confdir / input_path
+
+    main(tmpfname=str(input_path), outfname=str(output_path), **kwargs)
+
     if not pairwise_path.exists():
         pairwise_path = None
     return MoldResults(output_path, pairwise_path)
@@ -142,6 +153,7 @@ class MoldModel(Task):
         self.busy_main = True
         self.started.emit()
 
+        confdir = self.configuration_path.parent if self.configuration_path else None
         timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
         work_dir = self.temporary_path / timestamp
         work_dir.mkdir()
@@ -172,7 +184,8 @@ class MoldModel(Task):
             None,
             main_wrapper,
             workdir = work_dir,
-            tmpfname = str(self.sequence_path),
+            confdir = confdir,
+            input_path = self.sequence_path,
             taxalist = ','.join(qTaxa),
             taxonrank = self.taxon_rank.code,
             gapsaschars = self.gaps_as_characters.code,
@@ -193,10 +206,17 @@ class MoldModel(Task):
         self.result_pairwise = report.result.pairwise
 
     def open_configuration_path(self, path):
+        reference = {
+            'QTAXA': self.digest_qTaxa,
+            'INPUT_FILE': self.properties.sequence_path.set,
+            'TAXON_RANK': self.properties.taxon_rank.set,
+            'GAPS_AS_CHARS': self.properties.gaps_as_characters.set,
+        }
         try:
             params = parse_configuration_file(path)
-            for key, value in params.items():
-                print(key.upper(), '=', value)
+            for k, v in params.items():
+                if k in reference:
+                    reference[k](v)
             self.configuration_path = path
         except Exception as exception:
             self.notification.emit(Notification.Fail(str(exception)))
@@ -207,6 +227,26 @@ class MoldModel(Task):
             self.sequence_path = path
         except Exception as exception:
             self.notification.emit(Notification.Fail(str(exception)))
+
+    def digest_qTaxa(self, qTaxa):
+        qTaxa = qTaxa.split(',')
+        qTaxa = (x.strip() for x in qTaxa)
+
+        pairs = []
+        taxa = []
+        for x in qTaxa:
+            if 'VS' in x:
+                pairs.append(inflate(x, 'VS'))
+            else:
+                taxa.append(inflate(x, '+'))
+
+        self.taxon_mode = TaxonSelectMode.Line
+        self.taxon_line = ', '.join(taxa)
+        self.taxon_list = '\n'.join(taxa) + '\n'
+
+        self.pairs_mode = PairwiseSelectMode.Line
+        self.pairs_line = ', '.join(pairs)
+        self.pairs_list = '\n'.join(pairs) + '\n'
 
     def save_diagnosis(self, path):
         copy(self.result_diagnosis, path)

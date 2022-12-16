@@ -18,6 +18,10 @@
 
 """File checking and parsing"""
 
+from pathlib import Path
+
+from .types import TaxonRank, GapsAsCharacters
+
 
 def is_fasta(path):
     with open(path) as file:
@@ -43,6 +47,24 @@ def check_sequence_file(path):
 def parse_configuration_file(path):
     error_caption = 'Error opening configuration file: \n'
 
+    reference = {
+        'QTAXA': lambda x: x,
+        'INPUT_FILE': lambda x: Path(x),
+        'TAXON_RANK': lambda x: TaxonRank(x),
+        'GAPS_AS_CHARS': lambda x: GapsAsCharacters(x.capitalize()),
+        'CUTOFF': lambda x: x,
+        'NUMBERN': lambda x: x,
+        'NUMBER_OF_ITERATIONS': lambda x: x,
+        'MAXLEN1': lambda x: x,
+        'MAXLEN2': lambda x: x,
+        'IREF': lambda x: x,
+        'PDIFF': lambda x: x,
+        'NMAXSEQ': lambda x: x,
+        'SCORING': lambda x: x,
+        'OUTPUT_FILE': None,
+        'ORIG_FNAME': None,
+    }
+
     params = {}
     with open(path) as file:
         for line in file:
@@ -57,23 +79,7 @@ def parse_configuration_file(path):
         raise Exception(error_caption + f'No parameters found in file: {str(path)}')
 
     for param in params:
-        if not param.upper() in [
-            'GAPS_AS_CHARS',
-            'QTAXA',
-            'TAXON_RANK',
-            'INPUT_FILE',
-            'ORIG_FNAME',
-            'CUTOFF',
-            'NUMBERN',
-            'NUMBER_OF_ITERATIONS',
-            'MAXLEN1',
-            'MAXLEN2',
-            'IREF',
-            'PDIFF',
-            'NMAXSEQ',
-            'SCORING',
-            'OUTPUT_FILE',
-        ]:
+        if not param.upper() in reference.keys():
             raise Exception(error_caption + f'Invalid parameter name: {param}')
 
-    return params
+    return {k.upper(): reference[k.upper()](v) for k, v in params.items() if reference[k.upper()] is not None}
