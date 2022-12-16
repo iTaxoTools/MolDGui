@@ -55,16 +55,26 @@ class TextEditLogger(QtWidgets.QPlainTextEdit):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setReadOnly(True)
+        self.scrollbarOldValue = 0
+        self.verticalScrollBar().valueChanged.connect(self.checkScrollbar)
 
-    def wheelEvent(self, event):
-        event.ignore()
+    # def wheelEvent(self, event):
+    #     event.ignore()
 
     def append(self, text):
+        scrollbar = self.verticalScrollBar()
+        at_bottom = scrollbar.value() == scrollbar.maximum()
+
         self.moveCursor(QtGui.QTextCursor.End)
         self.insertPlainText(text)
-        sb = self.verticalScrollBar()
-        sb.setValue(sb.maximum())
         self.moveCursor(QtGui.QTextCursor.End)
+
+        if not at_bottom:
+            scrollbar.setValue(self.scrollbarOldValue)
+
+    def checkScrollbar(self, value):
+        scrollbar = self.verticalScrollBar()
+        self.scrollbarOldValue = value
 
 
 class TitleCard(Card):
