@@ -170,6 +170,7 @@ class ProgressCard(Card):
         bar.setMaximum(0)
         bar.setMinimum(0)
         bar.setValue(0)
+        bar.setVisible(False)
 
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(8)
@@ -196,8 +197,8 @@ class ProgressCard(Card):
         self.controls.done.setVisible(not busy)
         self.controls.spin.setVisible(busy)
         self.controls.wait.setVisible(busy)
-        self.controls.bar.setVisible(busy)
         self.controls.details.setChecked(busy)
+        # self.controls.bar.setVisible(busy)
 
 
 class InputSelector(Card):
