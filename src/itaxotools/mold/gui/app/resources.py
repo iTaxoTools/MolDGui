@@ -66,3 +66,7 @@ icons = ResourceLoader(
     app = lambda: QtGui.QIcon(
         _get_local('logos/mold_d.ico')),
 )
+
+docs = ResourceLoader(
+    manual = lambda: _get_local('docs/MolD_v1_3_manual.pdf'),
+)

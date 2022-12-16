@@ -73,15 +73,20 @@ class TitleCard(Card):
         contents.setSpacing(12)
 
         manual = QtWidgets.QPushButton('Manual')
-        galaxy = QtWidgets.QPushButton('Galaxy')
         homepage = QtWidgets.QPushButton('Homepage')
+        galaxy = QtWidgets.QPushButton('Galaxy')
         itaxotools = QtWidgets.QPushButton('iTaxoTools')
         itaxotools.setFixedWidth(100)
 
+        manual.clicked.connect(self.openManual)
+        homepage.clicked.connect(self.openHomepage)
+        galaxy.clicked.connect(self.openGalaxy)
+        itaxotools.clicked.connect(self.openItaxotools)
+
         buttons = QtWidgets.QVBoxLayout()
         buttons.addWidget(manual)
-        buttons.addWidget(galaxy)
         buttons.addWidget(homepage)
+        buttons.addWidget(galaxy)
         buttons.addWidget(itaxotools)
         buttons.addStretch(1)
         buttons.setSpacing(8)
@@ -94,6 +99,19 @@ class TitleCard(Card):
         layout.addLayout(contents, 1)
         layout.setSpacing(16)
         self.addLayout(layout)
+
+    def openManual(self):
+        url = QtCore.QUrl.fromLocalFile(str(app.resources.docs.manual))
+        QtGui.QDesktopServices.openUrl(url)
+
+    def openHomepage(self):
+        QtGui.QDesktopServices.openUrl(app.homepage_url)
+
+    def openGalaxy(self):
+        QtGui.QDesktopServices.openUrl(app.galaxy_url)
+
+    def openItaxotools(self):
+        QtGui.QDesktopServices.openUrl(app.itaxotools_url)
 
 
 class InputSelector(Card):
