@@ -20,6 +20,9 @@ from datetime import datetime
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
+from itaxotools.mold import main
+
+from ..files import check_sequence_file, parse_configuration_file
 from ..utility import Property, Instance
 from ..types import Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
 from .common import Task
@@ -63,6 +66,7 @@ class MoldModel(Task):
 
     def readyTriggers(self):
         return [
+            self.properties.sequence_path,
             self.properties.taxon_mode,
             self.properties.taxon_line,
             self.properties.taxon_list,
@@ -72,6 +76,8 @@ class MoldModel(Task):
         ]
 
     def isReady(self):
+        if not self.sequence_path:
+            return False
         if self.taxon_mode == TaxonSelectMode.Line:
             if self.taxon_line == '':
                 return False
@@ -93,86 +99,45 @@ class MoldModel(Task):
         work_dir = self.temporary_path / timestamp
         work_dir.mkdir()
 
+        qTaxa = []
+        if self.taxon_mode == TaxonSelectMode.All:
+            qTaxa.append('ALL')
+        elif self.taxon_mode == TaxonSelectMode.Line:
+            qTaxa.append(self.taxon_line)
+        elif self.taxon_mode == TaxonSelectMode.List:
+            qTaxa.append(self.taxon_list.replace('\n', ','))
+
+        if self.pairs_mode == PairwiseSelectMode.All:
+            qTaxa.append('ALLVSALL')
+        elif self.pairs_mode == PairwiseSelectMode.Line:
+            qTaxa.append(self.pairs_line)
+        elif self.pairs_mode == PairwiseSelectMode.List:
+            qTaxa.append(self.pairs_list.replace('\n', ','))
+
         self.exec(
             None,
             dummy_process,
-            taxon_mode=repr(self.taxon_mode),
-            taxon_line=repr(self.taxon_line),
-            taxon_list=repr(self.taxon_list),
-            pairs_mode=repr(self.pairs_mode),
-            pairs_line=repr(self.pairs_line),
-            pairs_list=repr(self.pairs_list),
-            taxon_rank=self.taxon_rank.code,
-            gaps_as_characters=self.gaps_as_characters.code,
+            tmpfname=str(self.sequence_path),
+            taxalist=','.join(qTaxa),
+            taxonrank=self.taxon_rank.code,
+            gapsaschars=self.gaps_as_characters.code,
         )
 
     def open_configuration_path(self, path):
-        error_caption = 'Error opening configuration file: \n'
-
-        params = {}
-        with open(path) as file:
-            for line in file:
-                line = line.strip()
-                if line.startswith('#'):
-                    continue
-                split = line.split('=')
-                if len(split) == 2 and len(split[1]) != 0:
-                    params[split[0]] = split[1].replace(' ', '')
-
-        if not params:
-            self.notification.emit(Notification.Fail(
-                error_caption + f'No parameters found in file: {str(path)}'))
-            return
-
-        for param in params:
-            if not param.upper() in [
-                'GAPS_AS_CHARS',
-                'QTAXA',
-                'TAXON_RANK',
-                'INPUT_FILE',
-                'ORIG_FNAME',
-                'CUTOFF',
-                'NUMBERN',
-                'NUMBER_OF_ITERATIONS',
-                'MAXLEN1',
-                'MAXLEN2',
-                'IREF',
-                'PDIFF',
-                'NMAXSEQ',
-                'SCORING',
-                'OUTPUT_FILE',
-            ]:
-                self.notification.emit(Notification.Fail(
-                    error_caption + f'Invalid parameter name: {param}'))
-                return
-
-        for key, value in params.items():
-            print(key.upper(), '=', value)
-
-        self.configuration_path = path
+        try:
+            params = parse_configuration_file(path)
+            for key, value in params.items():
+                print(key.upper(), '=', value)
+            self.configuration_path = path
+        except Exception as exception:
+            self.notification.emit(Notification.Fail(str(exception)))
 
     def open_sequence_path(self, path):
-        error_caption = 'Error opening sequence file: \n'
-
-        with open(path) as file:
-            char = file.read(1)
-            if char != '>':
-                self.notification.emit(Notification.Fail(
-                    error_caption + 'Sequences must be provided in the Fasta format, and the file must begin with the ">" symbol.'))
-                return
-
-            line = file.readline()
-            split = line.split('|')
-            if len(split) < 2:
-                self.notification.emit(Notification.Fail(
-                    error_caption + 'Taxon identifiers must be provided after each sequence identifier, separated by a single pipe symbol: "|"'))
-                return
-            elif len(split) > 2:
-                self.notification.emit(Notification.Fail(
-                    error_caption + 'Each identifier line must only contain a single pipe symbol: "|"'))
-                return
-
-        self.sequence_path = path
+        try:
+            check_sequence_file(path)
+            self.sequence_path = path
+        except Exception as exception:
+            self.notification.emit(Notification.Fail(str(exception)))
 
     def save(self, path):
         print('save', path)

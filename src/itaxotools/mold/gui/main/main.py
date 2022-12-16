@@ -28,6 +28,7 @@ from itaxotools.common.widgets import ToolDialog
 
 from .. import app
 from ..model import MoldModel
+from ..files import is_fasta
 from .body import Body
 from .footer import Footer
 from .header import Header
@@ -50,8 +51,11 @@ class Main(ToolDialog):
         self.model = MoldModel('Molecular Diagnosis')
         self.widgets.body.showModel(self.model)
 
-        for file in files:
-            print(file)
+        for path in (Path(file) for file in files):
+            if is_fasta(path):
+                self.model.open_sequence_path(path)
+            else:
+                self.model.open_configuration_path(path)
 
     def act(self):
         """Populate dialog actions"""

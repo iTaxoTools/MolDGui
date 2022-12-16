@@ -56,9 +56,9 @@ class ObjectView(QtWidgets.QFrame):
         msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msgBox.exec()
 
-    def getOpenPath(self, caption ='Open File', dir=''):
+    def getOpenPath(self, caption ='Open File', dir='', filter=''):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self.window(), f'{app.title} - {caption}', dir)
+            self.window(), f'{app.title} - {caption}', dir, filter=filter)
         if not filename:
             return None
         return Path(filename)

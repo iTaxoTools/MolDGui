@@ -25,13 +25,8 @@ from itaxotools.common.widgets import VLineSeparator
 
 from .. import app
 from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
+from ..files import is_fasta
 from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup, RichRadioButton
-
-
-def is_fasta(path):
-    with open(path) as file:
-        char = file.read(1)
-        return char == '>'
 
 
 class GrowingTextEdit(GTextEdit):
@@ -428,7 +423,7 @@ class MoldView(TaskView):
         self.binder.bind(object.properties.gaps_as_characters, self.cards.gaps.setMode)
 
     def open(self):
-        path = self.getOpenPath()
+        path = self.getOpenPath('Open sequences or configuration file')
         if path is None:
             return
         if is_fasta(path):
@@ -437,12 +432,12 @@ class MoldView(TaskView):
             self.object.open_configuration_path(path)
 
     def openConfiguration(self):
-        path = self.getOpenPath()
+        path = self.getOpenPath('Open configuration file', filter='MolD Configuration (*.*)')
         if path is not None:
             self.object.open_configuration_path(path)
 
     def openSequence(self):
-        path = self.getOpenPath()
+        path = self.getOpenPath('Open sequence file', filter='Fasta Sequences (*.*)')
         if path is not None:
             self.object.open_sequence_path(path)
 

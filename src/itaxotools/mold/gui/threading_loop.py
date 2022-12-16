@@ -1,5 +1,5 @@
 # -----------------------------------------------------------------------------
-# Taxi3Gui - GUI for Taxi3
+# MolDGui - Module and Gui for MolD
 # Copyright (C) 2022  Patmanidis Stefanos
 #
 # This program is free software: you can redistribute it and/or modify
