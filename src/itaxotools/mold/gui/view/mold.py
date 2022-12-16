@@ -621,10 +621,10 @@ class MoldView(TaskView):
         self.binder.bind(object.properties.result_diagnosis, self.cards.diagnosis.setPath)
         self.binder.bind(object.properties.result_pairwise, self.cards.pairwise.setPath)
 
-        self.binder.bind(self.cards.diagnosis.view, self.viewResult)
-        self.binder.bind(self.cards.diagnosis.save, self.saveResult)
-        self.binder.bind(self.cards.pairwise.view, self.viewResult)
-        self.binder.bind(self.cards.pairwise.save, self.saveResult)
+        self.binder.bind(self.cards.diagnosis.view, self.viewDiagnosis)
+        self.binder.bind(self.cards.diagnosis.save, self.saveDiagnosis)
+        self.binder.bind(self.cards.pairwise.view, self.viewPairwise)
+        self.binder.bind(self.cards.pairwise.save, self.savePairwise)
 
     def handleStarted(self):
         self.cards.progress.controls.logger.clear()
@@ -654,13 +654,27 @@ class MoldView(TaskView):
         if path is not None:
             self.object.open_sequence_path(path)
 
-    def viewResult(self, text, path):
+    def viewDiagnosis(self, text, path):
         dialog = ResultDialog(text, path, self.window())
+        dialog.save.connect(self.saveDiagnosis)
         dialog.show()
 
-    def saveResult(self, text, path):
-        print('> save', text, path)
+    def viewPairwise(self, text, path):
+        dialog = ResultDialog(text, path, self.window())
+        dialog.save.connect(self.savePairwise)
+        dialog.show()
+
+    def saveDiagnosis(self):
+        path = self.getSavePath('Save Molecular Diagnosis', str(self.object.suggested_diagnosis))
+        if path:
+            self.object.save_diagnosis(path)
+
+    def savePairwise(self):
+        path = self.getSavePath('Save Pairwise Analysis', str(self.object.suggested_pairwise))
+        if path:
+            self.object.save_pairwise(path)
 
     def save(self):
-        path = self.getSavePath('Save all')
-        self.object.save(path)
+        path = self.getExistingDirectory('Save All', str(self.object.suggested_directory))
+        if path:
+            self.object.save_all(path)

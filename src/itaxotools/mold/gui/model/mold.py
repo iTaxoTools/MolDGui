@@ -22,9 +22,10 @@ from datetime import datetime
 from tempfile import TemporaryDirectory
 from itertools import chain
 from pathlib import Path
+from shutil import copy
 
 from ..files import check_sequence_file, parse_configuration_file
-from ..utility import Property, Instance
+from ..utility import Property, Instance, Binder
 from ..types import Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
 from ..threading import TextEditLoggerIO
 from .common import Task
@@ -72,12 +73,24 @@ class MoldModel(Task):
     result_diagnosis = Property(Path, None)
     result_pairwise = Property(Path, None)
 
+    suggested_diagnosis = Property(Path, None)
+    suggested_pairwise = Property(Path, None)
+    suggested_directory = Property(Path, None)
+
     def __init__(self, name=None):
         super().__init__(name)
         self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_')
         self.temporary_path = Path(self.temporary_directory.name)
         self.textLogIO = TextEditLoggerIO(self.logLine)
         self.worker.setStream(self.textLogIO)
+
+        self.binder = Binder()
+        self.binder.bind(self.properties.sequence_path, self.properties.suggested_diagnosis,
+            lambda path: None if path is None else path.parent / f'{path.stem}.out')
+        self.binder.bind(self.properties.sequence_path, self.properties.suggested_pairwise,
+            lambda path: None if path is None else path.parent / f'{path.stem}.pairwise.out')
+        self.binder.bind(self.properties.sequence_path, self.properties.suggested_directory,
+            lambda path: None if path is None else path.parent)
 
         for property in [
             self.properties.busy,
@@ -195,5 +208,12 @@ class MoldModel(Task):
         except Exception as exception:
             self.notification.emit(Notification.Fail(str(exception)))
 
-    def save(self, path):
-        print('save', path)
+    def save_diagnosis(self, path):
+        copy(self.result_diagnosis, path)
+
+    def save_pairwise(self, path):
+        copy(self.result_pairwise, path)
+
+    def save_all(self, path):
+        self.save_diagnosis(path / self.suggested_diagnosis.name)
+        self.save_pairwise(path / self.suggested_pairwise.name)

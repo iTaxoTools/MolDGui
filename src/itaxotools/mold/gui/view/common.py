@@ -71,6 +71,13 @@ class ObjectView(QtWidgets.QFrame):
             return None
         return Path(filename)
 
+    def getExistingDirectory(self, caption ='Open File', dir=''):
+        filename = QtWidgets.QFileDialog.getExistingDirectory(
+            self.window(), f'{app.title} - {caption}', dir)
+        if not filename:
+            return None
+        return Path(filename)
+
 
 class TaskView(ObjectView):
 
