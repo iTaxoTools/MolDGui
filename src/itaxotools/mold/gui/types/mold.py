@@ -17,12 +17,15 @@
 # -----------------------------------------------------------------------------
 
 from enum import Enum, auto
+from typing import NamedTuple
+from pathlib import Path
 
 
 class TaxonSelectMode(Enum):
     All = 'All taxa'
     List = 'From taxon list'
     Line = 'From configuration line'
+    No = 'None'
 
     def __str__(self):
         return self.value
@@ -32,6 +35,7 @@ class PairwiseSelectMode(Enum):
     All = 'All pairs'
     List = 'From pair list'
     Line = 'From configuration line'
+    No = 'None'
 
     def __str__(self):
         return self.value
@@ -55,3 +59,8 @@ class GapsAsCharacters(Enum):
         self.code = code
         self.label = label
         self.description = description
+
+
+class MoldResults(NamedTuple):
+    output: Path | None
+    pairwise: Path | None

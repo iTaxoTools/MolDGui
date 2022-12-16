@@ -74,7 +74,7 @@ def C_VP_PP(clade_sorted_seqs, clade, shared_positions, CUTOFF):# complist_varia
     return complist, Clade_priority_positions, cutoffs, pures####! pures added
 
 #***STEPS 3 RANDOM SEARCH ACROSS PRIORITY POSITIONS TO FIND RAW DIAGNOSTIC COMBINATIONS AND TO SUBSEQUENTLY REFINE THEM
-def random_position(somelist, checklist):#gives a random index (integer) of the specified range, and returns indexed somelist element if it is not present in the checklist 
+def random_position(somelist, checklist):#gives a random index (integer) of the specified range, and returns indexed somelist element if it is not present in the checklist
     while True:
         i = random.randint(0, len(somelist) - 1)
         if somelist[i] not in checklist:
@@ -242,7 +242,7 @@ def Screwed_dataset_new(raw_records, nseq_per_clade_to_screw, PositionArrays, Va
         for i in range(len(raw_records)):
             if raw_records[i][1]==letter:
                 clade_sorted_seqs[letter].append(raw_records[i][2])
-    
+
     for clade in clades:
         seqlist = clade_sorted_seqs[clade]
         newseqs = []
@@ -264,7 +264,7 @@ def Screwed_dataset_new(raw_records, nseq_per_clade_to_screw, PositionArrays, Va
                 newseq = random_sequence_new(seq, PositionArrays, VarPosList, Percent_difference)
                 newseqs.append(newseq)
         clade_sorted_seqs[clade] = newseqs
-    
+
     shared_positions={}
     for key in clade_sorted_seqs:
         sh_pos=[]
@@ -278,7 +278,7 @@ def Screwed_dataset_new(raw_records, nseq_per_clade_to_screw, PositionArrays, Va
             if shared_nucleotide == True and csm != 'N':
                 sh_pos.append(i)
         shared_positions[key]=sh_pos
-    
+
     x,y,z,pures = C_VP_PP(clade_sorted_seqs, Taxon, shared_positions, Cutoff)#STEP2####
     return x, y
 
@@ -304,7 +304,7 @@ def getAllPairs(taxalist):
         for j in range(i+1, len(stl)):
             uniquetaxapairs.append([stl[i],stl[j]])
     return uniquetaxapairs
-        
+
 
 ################################################READ IN PARAMETER FILE AND DATA FILE
 
@@ -314,7 +314,7 @@ def get_args(): #arguments needed to give to this script
     required.add_argument("-i", help="textfile with parameters of the analysis", required=True)
     return parser.parse_args()
 
-def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None, numnucl=None, numiter=None, maxlenraw=None, maxlenrefined=None, iref=None, pdiff=None, nmax=None, thresh=None, tmpfname=None, origfname=None):
+def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None, numnucl=None, numiter=None, maxlenraw=None, maxlenrefined=None, iref=None, pdiff=None, nmax=None, thresh=None, tmpfname=None, origfname=None, outfname=None):
     ParDict = {}
     if not(all([gapsaschars, taxalist, taxonrank, cutoff, numnucl, numiter, maxlenraw, maxlenrefined, iref, pdiff, nmax, thresh, tmpfname])):
         args = get_args()
@@ -342,7 +342,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
         #ParDict['PrSeq'] = prseq
         ParDict['NMaxSeq'] = nmax
         ParDict['Scoring'] = thresh
-        ParDict['OUTPUT_FILE'] = "str"        
+        ParDict['OUTPUT_FILE'] = outfname or "str"
     print(ParDict)
     ############################################# #VERYNEW HOW GAPS ARE TREATED
     #REQUIRES A NEW FIELD IN THE GUI
@@ -350,14 +350,14 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
         gaps2D = True#VERYNEW
     else:#VERYNEW
         gaps2D = False#VERYNEW
-    
+
     ############################################ DATA FILE
     checkread = open(ParDict['INPUT_FILE'], 'r')
     firstline = checkread.readline()
     checkread.close()
     imported=[]#set up a new list with species and identifiers
     if '>' in firstline:
-        f = open(ParDict['INPUT_FILE'], 'r') 
+        f = open(ParDict['INPUT_FILE'], 'r')
         for line in f:#VERYNEW - THE DATA READING FROM ALIGNMENT FILE IS ALL REVISED UNTIL f.close()
             line=line.rstrip()
             if line.startswith('>'):
@@ -375,7 +375,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
                 imported[-1][-1] = imported[-1][-1]+DNA
         f.close()
     else:
-        f = open(ParDict['INPUT_FILE'], 'r') 
+        f = open(ParDict['INPUT_FILE'], 'r')
         for line in f:#VERYNEW - THE DATA READING FROM ALIGNMENT FILE IS ALL REVISED UNTIL f.close()
             line=line.rstrip()
             data = line.split('\t')
@@ -389,12 +389,12 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
                 DNA = data[2].upper().replace('-', 'N').replace('R', 'N').replace('Y', 'N').replace('S','N').replace('W','N').replace('M','N').replace('K','N')#VERYNEW
             imported.append([ID, thetax, DNA])
         f.close()
-    
+
     if 'NumberN' in list(ParDict.keys()):#How many ambiguously called nucleotides are allowed
         NumberN = int(ParDict['NumberN'])
     else:
         NumberN = 5
-    
+
     if len(set([len(i[2]) for i in imported])) != 1:
         print('Alignment contains sequences of different lengths:', set([len(i[2]) for i in imported]))
     else:
@@ -425,9 +425,9 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
     print('Length of the alignment:', len(imported[0][2]),'->', FragmentLen)
     print('Indexing reference:', ParDict['Iref'].replace('NO', 'Not set').replace('in', 'included').replace('ex', 'excluded'))
     print('Read in', len(raw_records), 'sequences')
-    
+
     PosArrays, VarPosList = PositionArrays([i[2] for i in raw_records])#VERYNEW
-   
+
     #############################################READ IN OTHER ANALYSIS PARAMETERS
     ##OCT2022 - start
     withplus = []
@@ -475,7 +475,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
                 print('UNRECOGNIZED TAXON', item)
     #OCT2022 - end
     print('query taxa:', len(qCLADEs+withplus), '-', str(sorted(qCLADEs)+sorted(withplus)).replace('[','').replace(']','').replace("'", ''))#1.3
-    
+
     if 'Cutoff' in list(ParDict.keys()):#CUTOFF Number of the informative positions to be considered, default 100
         Cutoff = ParDict['Cutoff']#VERYNEW
     else:
@@ -486,19 +486,19 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
     else:
         N1 = 10000
     print('Number iterations of MolD set as:', N1)
-    
+
     if 'MaxLen1' in list(ParDict.keys()):#Maximum length for the raw mDNCs
         MaxLen1 = int(ParDict['MaxLen1'])
     else:
         MaxLen1 = 12
     print('Maximum length of raw mDNCs set as:', MaxLen1)
-    
+
     if 'MaxLen2' in list(ParDict.keys()):#Maximum length for the refined mDNCs
         MaxLen2 = int(ParDict['MaxLen2'])
     else:
         MaxLen2 = 7
     print('Maximum length of refined mDNCs set as:', MaxLen2)
-    
+
     if 'Pdiff' in list(ParDict.keys()):#Percent difference
         Percent_difference = float(ParDict['Pdiff'])
     else:
@@ -507,13 +507,13 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
         else:
             Percent_difference = 5
     print('simulated sequences up to', Percent_difference, 'percent divergent from original ones')
-    
+
     if 'NMaxSeq' in list(ParDict.keys()):#Maximum number of sequences per taxon to be modified
         Seq_per_clade_to_screw = int(ParDict['NMaxSeq'])
     else:
         Seq_per_clade_to_screw = 10####!changed value
     print('Maximum number of sequences modified per clade', Seq_per_clade_to_screw)
-    
+
     if 'Scoring' in list(ParDict.keys()):
         if ParDict['Scoring'] == 'lousy':
             threshold = 66####!changed value
@@ -541,11 +541,11 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
     class SortedDisplayDict(dict):#this is only to get a likable formatting of the barcode
         def __str__(self):
             return "[" + ", ".join("%r: %r" % (key, self[key]) for key in sorted(self)) + "]"
-    
+
     class SortedDisplayDictVerbose(dict):#this is only to get a likable formatting of the barcode
         def __str__(self):
             return ", ".join("%r %r" % (self[key],'in the site '+str(key)) for key in sorted(self)).replace("'", '').replace("A", "'A'").replace("C", "'C'").replace("G", "'G'").replace("T", "'T'")+'.'
-    
+
     #Calling functions and outputing results
     if ParDict['OUTPUT_FILE'] == "str":
         g = StringIO()
@@ -575,7 +575,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
         print('<h4>NOTE: The alignment was trimmed automatically to match median sequences length. The analysed slice starts from the site',str(sstart+1),'and ends on the site',str(send+1),'. The site indexing in the rDNC as in the untrimmed alignment.</h4>', file=g)
 
     print('<h4>########################### RESULTS ##########################</h4>', file=g)
-    
+
     for qCLADE in sorted(qCLADEs) + sorted(withplus):#OCT2022
         if '+' in qCLADE:
             if shift == True:
@@ -681,7 +681,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
     print("<p>", '    to diagnose the query taxon', "</p>", file=g)
     print("<h4>", '    Final diagnosis corresponds to rDNC', "</h4>", file=g)
     #OCT2022 - end
-    
+
     if ParDict['OUTPUT_FILE'] == "str":
         contents = g.getvalue()
         os.unlink(ParDict['INPUT_FILE'])
@@ -732,9 +732,8 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
             print(Pairphraser[:-2])
             print("<p>",Pairphraser[:-2],'</h4>', file=h)#OCT2022
         h.close()
-            
+
     #OCT2022 - end
     return contents, qCLADEs
 if __name__ == "__main__":
     c, q = mainprocessing()
-  

@@ -20,11 +20,9 @@ from datetime import datetime
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
-from itaxotools.mold import main
-
 from ..files import check_sequence_file, parse_configuration_file
 from ..utility import Property, Instance
-from ..types import Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
+from ..types import Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
 from .common import Task
 
 
@@ -42,7 +40,20 @@ def dummy_process(**kwargs):
     return 42
 
 
+def main_wrapper(workdir: Path, **kwargs):
+    from itaxotools.mold import main
+
+    output_path = workdir / 'out.html'
+    pairwise_path = workdir / 'out_pairwise.html'
+    main(outfname=str(output_path), **kwargs)
+    if not pairwise_path.exists():
+        pairwise_path = None
+    return MoldResults(output_path, pairwise_path)
+
+
 class MoldModel(Task):
+    task_name = 'MolD'
+
     configuration_path = Property(Path, None)
     sequence_path = Property(Path, None)
 
@@ -116,12 +127,26 @@ class MoldModel(Task):
 
         self.exec(
             None,
-            dummy_process,
-            tmpfname=str(self.sequence_path),
-            taxalist=','.join(qTaxa),
-            taxonrank=self.taxon_rank.code,
-            gapsaschars=self.gaps_as_characters.code,
+            main_wrapper,
+            workdir = work_dir,
+            tmpfname = str(self.sequence_path),
+            taxalist = ','.join(qTaxa),
+            taxonrank = self.taxon_rank.code,
+            gapsaschars = self.gaps_as_characters.code,
+            cutoff = '100',
+            numnucl = 5,
+            numiter = 10000,
+            maxlenraw = 12,
+            maxlenrefined = 7,
+            iref = 'NO',
+            pdiff = 1 if self.taxon_rank.code == 1 else 5,
+            nmax = 10,
+            thresh = 75,
         )
+
+    def onDone(self, report):
+        super().onDone(report)
+        print(report.result)
 
     def open_configuration_path(self, path):
         try:

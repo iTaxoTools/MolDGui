@@ -209,7 +209,7 @@ class ModeSelector(Card):
         layout.setSpacing(32)
         layout.addWidget(label)
         layout.addSpacing(8)
-        layout.addLayout(radios, 3)
+        layout.addLayout(radios, 1)
         layout.addSpacing(32)
         self.addLayout(layout)
 
