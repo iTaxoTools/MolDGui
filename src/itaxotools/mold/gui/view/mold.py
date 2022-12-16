@@ -154,7 +154,7 @@ class SequenceSelector(InputSelector):
 
 
 class ModeSelector(Card):
-    toggled = QtCore.Signal()
+    toggled = QtCore.Signal(object)
 
     modes = []
     mode_text = 'Mode Selection'
@@ -176,6 +176,7 @@ class ModeSelector(Card):
 
         group = RadioButtonGroup()
         group.valueChanged.connect(self.handleToggle)
+        group.valueChanged.connect(self.toggled)
         self.controls.mode = group
 
         radios = QtWidgets.QHBoxLayout()

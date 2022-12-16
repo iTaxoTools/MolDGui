@@ -57,6 +57,31 @@ class MoldModel(Task):
         self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_')
         self.temporary_path = Path(self.temporary_directory.name)
 
+    def readyTriggers(self):
+        return [
+            self.properties.taxon_mode,
+            self.properties.taxon_line,
+            self.properties.taxon_list,
+            self.properties.pairs_mode,
+            self.properties.pairs_line,
+            self.properties.pairs_list,
+        ]
+
+    def isReady(self):
+        if self.taxon_mode == TaxonSelectMode.Line:
+            if self.taxon_line == '':
+                return False
+        if self.taxon_mode == TaxonSelectMode.List:
+            if self.taxon_list == '':
+                return False
+        if self.pairs_mode == PairwiseSelectMode.Line:
+            if self.pairs_line == '':
+                return False
+        if self.pairs_mode == PairwiseSelectMode.List:
+            if self.pairs_list == '':
+                return False
+        return True
+
     def start(self):
         self.busy = True
         self.busy_main = True
