@@ -60,6 +60,8 @@ class MoldModel(Task):
     lineLogged = QtCore.Signal(str)
     started = QtCore.Signal()
 
+    show_progress = Property(bool)
+
     configuration_path = Property(Path, None)
     sequence_path = Property(Path, None)
 
@@ -84,8 +86,17 @@ class MoldModel(Task):
         self.textLogIO = TextEditLoggerIO(self.logLine)
         self.worker.setStream(self.textLogIO)
 
+        for property in [
+            self.properties.busy,
+            self.properties.done,
+        ]:
+            property.notify.connect(self.checkProgressVisible)
+
     def logLine(self, text):
         self.lineLogged.emit(text)
+
+    def checkProgressVisible(self):
+        self.show_progress = self.busy or self.done
 
     def readyTriggers(self):
         return [

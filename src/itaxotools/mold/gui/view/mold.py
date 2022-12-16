@@ -26,7 +26,7 @@ from itaxotools.common.widgets import VLineSeparator
 from .. import app
 from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
 from ..files import is_fasta
-from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup, RichRadioButton
+from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle
 
 
 class GrowingTextEdit(GTextEdit):
@@ -141,25 +141,63 @@ class ProgressCard(Card):
     def __init__(self, parent):
         super().__init__(parent)
 
-        label = QtWidgets.QLabel('Diagnosing sequences, please hold on...')
-        label.setStyleSheet("""font-size: 16px;""")
+        check = QtWidgets.QLabel('\u2714')
+        check.setStyleSheet("""font-size: 16px; color: Palette(Shadow);""")
+
+        spin = SpinningCircle()
+        spin.radius = 7
+
+        wait = QtWidgets.QLabel('Diagnosing sequences, please hold on...')
+        wait.setStyleSheet("""font-size: 16px;""")
+
+        done = QtWidgets.QLabel('Progress Logs')
+        done.setStyleSheet("""font-size: 16px;""")
+
+        details = QtWidgets.QPushButton('Details')
+        details.setCheckable(True)
+        details.setChecked(True)
+
+        head = QtWidgets.QHBoxLayout()
+        head.setContentsMargins(0, 0, 0, 0)
+        head.setSpacing(12)
+        head.addWidget(spin)
+        head.addWidget(check)
+        head.addWidget(wait, 1)
+        head.addWidget(done, 1)
+        head.addWidget(details)
 
         bar = QtWidgets.QProgressBar()
         bar.setMaximum(0)
         bar.setMinimum(0)
         bar.setValue(0)
 
-        logger = TextEditLogger()
-
         layout = QtWidgets.QVBoxLayout()
         layout.setSpacing(8)
-        layout.addWidget(label)
+        layout.addLayout(head)
         layout.addWidget(bar)
-        layout.addWidget(logger, 1)
-        self.addLayout(layout)
 
+        logger = TextEditLogger()
+
+        self.addLayout(layout)
+        self.addWidget(logger)
+
+        details.toggled.connect(logger.setVisible)
+
+        self.controls.check = check
+        self.controls.spin = spin
+        self.controls.wait = wait
+        self.controls.done = done
+        self.controls.details = details
         self.controls.bar = bar
         self.controls.logger = logger
+
+    def setBusy(self, busy):
+        self.controls.check.setVisible(not busy)
+        self.controls.done.setVisible(not busy)
+        self.controls.spin.setVisible(busy)
+        self.controls.wait.setVisible(busy)
+        self.controls.bar.setVisible(busy)
+        self.controls.details.setChecked(busy)
 
 
 class InputSelector(Card):
@@ -429,7 +467,7 @@ class ResultViewer(Card):
         label.setStyleSheet("""font-size: 16px;""")
 
         check = QtWidgets.QLabel('\u2714')
-        check.setStyleSheet("""font-size: 16px; color: Palette(Highlight);""")
+        check.setStyleSheet("""font-size: 16px; color: Palette(Shadow);""")
 
         view = QtWidgets.QPushButton('View')
         view.clicked.connect(self.handleView)
@@ -507,6 +545,8 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.sequence.browse, self.openSequence)
 
         self.binder.bind(object.properties.busy, self.setBusy)
+        self.binder.bind(object.properties.busy, self.cards.progress.setBusy)
+        self.binder.bind(object.properties.show_progress, self.cards.progress.setVisible)
         self.binder.bind(object.lineLogged, self.cards.progress.controls.logger.append)
         self.binder.bind(object.started, self.handleStarted)
         self.binder.bind(object.notification, self.showNotification)
@@ -552,7 +592,6 @@ class MoldView(TaskView):
         for card in self.cards:
             if card != self.cards.title and card != self.cards.progress:
                 card.setEnabled(not busy)
-        self.cards.progress.setVisible(busy)
 
     def open(self):
         path = self.getOpenPath('Open sequences or configuration file')

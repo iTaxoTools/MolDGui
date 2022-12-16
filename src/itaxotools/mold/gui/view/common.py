@@ -19,6 +19,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from pathlib import Path
+from time import time_ns
 
 from itaxotools.common.utility import AttrDict, override
 
@@ -297,3 +298,64 @@ class RichRadioButton(QtWidgets.QRadioButton):
         size = super().sizeHint()
         size += QtCore.QSize(extra, 0)
         return size
+
+
+class SpinningCircle(QtWidgets.QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(self.handleTimer)
+        self.timerStep = 10
+        self.radius = 8
+        self.period = 2
+        self.span = 120
+        self.width = 2
+
+    def setVisible(self, visible):
+        super().setVisible(visible)
+        if visible:
+            self.start()
+        else:
+            self.stop()
+
+    def start(self):
+        self.timer.start(self.timerStep)
+
+    def stop(self):
+        self.timer.stop()
+
+    def handleTimer(self):
+        self.repaint()
+
+    def sizeHint(self):
+        diameter = (self.radius + self.width) * 2
+        return QtCore.QSize(diameter, diameter)
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter()
+        painter.begin(self)
+
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setBrush(QtCore.Qt.NoBrush)
+
+        x = self.size().width()/2
+        y = self.size().height()/2
+        painter.translate(QtCore.QPoint(x, y))
+
+        palette = QtGui.QGuiApplication.palette()
+        weak = palette.color(QtGui.QPalette.Mid)
+        bold = palette.color(QtGui.QPalette.Shadow)
+
+        rad = self.radius
+        rect = QtCore.QRect(-rad, -rad, 2 * rad, 2 * rad)
+
+        painter.setPen(QtGui.QPen(weak, self.width, QtCore.Qt.SolidLine))
+        painter.drawEllipse(rect)
+
+        period_ns = int(self.period * 10**9)
+        ns = time_ns() % period_ns
+        degrees = - 360 * ns / period_ns
+        painter.setPen(QtGui.QPen(bold, self.width, QtCore.Qt.SolidLine))
+        painter.drawArc(rect, degrees * 16, self.span * 16)
+
+        painter.end()
