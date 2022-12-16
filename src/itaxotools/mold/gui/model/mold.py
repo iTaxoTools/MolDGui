@@ -89,6 +89,11 @@ class MoldModel(Task):
     def isReady(self):
         if not self.sequence_path:
             return False
+        if all((
+            self.taxon_mode == TaxonSelectMode.No,
+            self.pairs_mode == PairwiseSelectMode.No
+        )):
+            return False
         if self.taxon_mode == TaxonSelectMode.Line:
             if self.taxon_line == '':
                 return False

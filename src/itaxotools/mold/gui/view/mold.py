@@ -395,6 +395,7 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.configuration.browse, self.openConfiguration)
         self.binder.bind(self.cards.sequence.browse, self.openSequence)
 
+        self.binder.bind(object.properties.busy, self.setBusy)
         self.binder.bind(object.notification, self.showNotification)
         # self.bind(object.progression, self.cards.progress.showProgress)
 
@@ -421,6 +422,11 @@ class MoldView(TaskView):
 
         self.binder.bind(self.cards.gaps.toggled, object.properties.gaps_as_characters)
         self.binder.bind(object.properties.gaps_as_characters, self.cards.gaps.setMode)
+
+    def setBusy(self, busy):
+        for card in self.cards:
+            if card != self.cards.title:
+                card.setEnabled(not busy)
 
     def open(self):
         path = self.getOpenPath('Open sequences or configuration file')
