@@ -42,7 +42,7 @@ class Main(ToolDialog):
         self.setWindowFlags(QtCore.Qt.Window)
         self.setWindowIcon(app.resources.icons.app)
         self.setWindowTitle(app.title)
-        self.resize(700, 500)
+        self.resize(660, 500)
 
         self.act()
         self.draw()

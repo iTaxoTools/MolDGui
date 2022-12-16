@@ -21,7 +21,7 @@ from tempfile import TemporaryDirectory
 from pathlib import Path
 
 from ..utility import Property, Instance
-from ..types import Notification, TaxonSelectMode, PairwiseSelectMode
+from ..types import Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
 from .common import Task
 
 
@@ -50,6 +50,10 @@ class MoldModel(Task):
     pairs_mode = Property(PairwiseSelectMode, PairwiseSelectMode.All)
     pairs_line = Property(str, '')
     pairs_list = Property(str, '')
+
+    taxon_rank = Property(TaxonRank, TaxonRank.Species)
+    gaps_as_characters = Property(GapsAsCharacters, GapsAsCharacters.Yes)
+
 
     def __init__(self, name=None):
         super().__init__(name)
@@ -98,6 +102,8 @@ class MoldModel(Task):
             pairs_mode=repr(self.pairs_mode),
             pairs_line=repr(self.pairs_line),
             pairs_list=repr(self.pairs_list),
+            taxon_rank=self.taxon_rank.code,
+            gaps_as_characters=self.gaps_as_characters.code,
         )
 
     def open_configuration_path(self, path):

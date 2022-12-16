@@ -35,3 +35,23 @@ class PairwiseSelectMode(Enum):
 
     def __str__(self):
         return self.value
+
+
+class TaxonRank(Enum):
+    Species = '1', 'Species:', 'up to 1% divergence from original'
+    Supraspecific = '2', 'Supraspecific taxa:', 'up to 5% divergence from original'
+
+    def __init__(self, code, label, description):
+        self.code = code
+        self.label = label
+        self.description = description
+
+
+class GapsAsCharacters(Enum):
+    Yes = 'Yes', 'Yes:', 'gaps ("-") are transformed into "D" and treated as independent characters'
+    No = 'No', 'No:', 'gaps ("-") are treated as missing data ("N")'
+
+    def __init__(self, code, label, description):
+        self.code = code
+        self.label = label
+        self.description = description

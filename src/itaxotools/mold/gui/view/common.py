@@ -247,3 +247,55 @@ class RadioButtonGroup(QtCore.QObject):
         self.value = newValue
         for widget, value in self.members.items():
             widget.setChecked(value == newValue)
+
+class RichRadioButton(QtWidgets.QRadioButton):
+    def __init__(self, text, desc, parent=None):
+        super().__init__(text, parent)
+        self.desc = desc
+        self.setStyleSheet("""
+            RichRadioButton {
+                letter-spacing: 1px;
+                font-weight: bold;
+            }""")
+        font = self.font()
+        font.setBold(False)
+        font.setLetterSpacing(QtGui.QFont.PercentageSpacing, 0)
+        self.small_font = font
+
+    def event(self, event):
+        if isinstance(event, QtGui.QWheelEvent):
+            # Fix scrolling when hovering disabled button
+            event.ignore()
+            return False
+        return super().event(event)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QtGui.QPainter()
+        painter.begin(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+
+        painter.setFont(self.small_font)
+        width = self.size().width()
+        height = self.size().height()
+        sofar = super().sizeHint().width()
+
+        rect = QtCore.QRect(sofar, 0, width - sofar, height)
+        flags = QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter
+        painter.drawText(rect, flags, self.desc)
+
+        painter.end()
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        x = event.localPos().x()
+        w = self.sizeHint().width()
+        if x < w:
+            self.setChecked(True)
+
+    def sizeHint(self):
+        metrics = QtGui.QFontMetrics(self.small_font)
+        extra = metrics.horizontalAdvance(self.desc)
+        size = super().sizeHint()
+        size += QtCore.QSize(extra, 0)
+        return size

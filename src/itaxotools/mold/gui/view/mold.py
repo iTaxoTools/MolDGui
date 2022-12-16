@@ -24,8 +24,8 @@ from itaxotools.common.utility import AttrDict, override
 from itaxotools.common.widgets import VLineSeparator
 
 from .. import app
-from ..types import TaxonSelectMode, PairwiseSelectMode
-from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup
+from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
+from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup, RichRadioButton
 
 
 def is_fasta(path):
@@ -62,11 +62,8 @@ class TitleCard(Card):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        description = LongLabel(
-            'Identify diagnostic nucleotide combinations (DNCs) in DNA sequence alignments, which can be used to provide formal diagnoses of these taxa. This is in the form of "redundant DNC” (rDNC), which takes into account unsampled genetic diversity.')
-
-        citations = LongLabel(
-            'Fedosov A.E., Achaz G., Gontchar A., Puillandre N. 2022. MOLD, a novel software to compile accurate and reliable DNA diagnoses for taxonomic descriptions. Molecular Ecology Resources, DOI: 10.1111/1755-0998.13590.')
+        description = LongLabel(app.description)
+        citations = LongLabel(app.citations)
         citations.setStyleSheet("LongLabel {color: Palette(Dark)}")
 
         contents = QtWidgets.QVBoxLayout()
@@ -107,7 +104,7 @@ class InputSelector(Card):
 
         label = QtWidgets.QLabel(label_text + ':')
         label.setStyleSheet("""font-size: 16px;""")
-        label.setFixedWidth(174)
+        label.setFixedWidth(134)
 
         filename = GLineEdit()
         filename.setReadOnly(True)
@@ -145,12 +142,20 @@ class InputSelector(Card):
 
 class ConfigSelector(InputSelector):
     def __init__(self, parent=None):
-        super().__init__('Configuration File', 'Load options from a file', parent)
+        super().__init__(
+            'Configuration File',
+            'Load options from a file',
+            parent
+        )
 
 
 class SequenceSelector(InputSelector):
     def __init__(self, parent=None):
-        super().__init__('Sequence Data File', 'To begin, open a Fasta file that includes taxon identifiers', parent)
+        super().__init__(
+            'Sequence Data File',
+            'To begin, open a Fasta file that includes taxon identifiers',
+            parent
+        )
 
 
 class ModeSelector(Card):
@@ -172,7 +177,7 @@ class ModeSelector(Card):
     def draw_modes(self):
         label = QtWidgets.QLabel(self.mode_text + ':')
         label.setStyleSheet("""font-size: 16px;""")
-        label.setFixedWidth(174)
+        label.setFixedWidth(134)
 
         group = RadioButtonGroup()
         group.valueChanged.connect(self.handleToggle)
@@ -181,7 +186,7 @@ class ModeSelector(Card):
 
         radios = QtWidgets.QHBoxLayout()
         radios.setContentsMargins(0, 0, 0, 0)
-        radios.setSpacing(32)
+        radios.setSpacing(16)
         for mode in self.modes:
             button = QtWidgets.QRadioButton(str(mode))
             radios.addWidget(button)
@@ -192,7 +197,7 @@ class ModeSelector(Card):
         layout.addWidget(label)
         layout.addSpacing(8)
         layout.addLayout(radios, 3)
-        layout.addStretch(1)
+        layout.addSpacing(32)
         self.addLayout(layout)
 
     def draw_line(self):
@@ -215,7 +220,7 @@ class ModeSelector(Card):
 
     def draw_list(self):
         label = LongLabel(self.list_text)
-        label.setFixedWidth(174)
+        label.setFixedWidth(134)
         label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
         list = GrowingTextEdit()
@@ -285,6 +290,67 @@ class PairwiseSelector(ModeSelector):
         self.controls.section_list.setVisible(mode == PairwiseSelectMode.List)
 
 
+class TaxonRankSelector(Card):
+    toggled = QtCore.Signal(TaxonRank)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        title = 'Taxon rank:'
+        desc = 'determines the maximum divergence that is allowed when simulating sequences.'
+        label = QtWidgets.QLabel(
+        f"""<html>
+        <span style="font-size:16px;">{title}&nbsp;</span>
+        <span style="font-size:12px;">{desc}</span>
+        </html>""")
+
+        group = RadioButtonGroup()
+        group.valueChanged.connect(self.toggled)
+        self.controls.rank = group
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setSpacing(8)
+        layout.addWidget(label)
+
+        for rank in TaxonRank:
+            button = RichRadioButton(rank.label, rank.description)
+            layout.addWidget(button)
+            group.add(button, rank)
+
+        self.addLayout(layout)
+
+    def setRank(self, rank):
+        self.controls.rank.setValue(rank)
+
+
+class GapsAsCharactersSelector(Card):
+    toggled = QtCore.Signal(GapsAsCharacters)
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        label = QtWidgets.QLabel("Code alignment gaps as characters")
+        label.setStyleSheet("""font-size: 16px;""")
+
+        group = RadioButtonGroup()
+        group.valueChanged.connect(self.toggled)
+        self.controls.gaps = group
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setSpacing(8)
+        layout.addWidget(label)
+
+        for mode in GapsAsCharacters:
+            button = RichRadioButton(mode.label, mode.description)
+            layout.addWidget(button)
+            group.add(button, mode)
+
+        self.addLayout(layout)
+
+    def setMode(self, mode):
+        self.controls.gaps.setValue(mode)
+
+
 class MoldView(TaskView):
 
     def __init__(self, parent=None):
@@ -298,6 +364,8 @@ class MoldView(TaskView):
         self.cards.sequence = SequenceSelector(self)
         self.cards.taxa = TaxonSelector(self)
         self.cards.pairs = PairwiseSelector(self)
+        self.cards.rank = TaxonRankSelector(self)
+        self.cards.gaps = GapsAsCharactersSelector(self)
 
         layout = QtWidgets.QVBoxLayout()
         for card in self.cards:
@@ -334,6 +402,12 @@ class MoldView(TaskView):
         self.binder.bind(object.properties.pairs_line, self.cards.pairs.controls.line.setText)
         self.binder.bind(self.cards.pairs.controls.list.textEditedSafe, object.properties.pairs_list)
         self.binder.bind(object.properties.pairs_list, self.cards.pairs.controls.list.setText)
+
+        self.binder.bind(self.cards.rank.toggled, object.properties.taxon_rank)
+        self.binder.bind(object.properties.taxon_rank, self.cards.rank.setRank)
+
+        self.binder.bind(self.cards.gaps.toggled, object.properties.gaps_as_characters)
+        self.binder.bind(object.properties.gaps_as_characters, self.cards.gaps.setMode)
 
     def open(self):
         path = self.getOpenPath()
