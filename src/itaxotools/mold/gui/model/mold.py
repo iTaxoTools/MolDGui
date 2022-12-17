@@ -65,8 +65,6 @@ class MoldModel(Task):
     lineLogged = QtCore.Signal(str)
     started = QtCore.Signal()
 
-    show_progress = Property(bool)
-
     configuration_path = Property(Path, None)
     sequence_path = Property(Path, None)
 
@@ -103,17 +101,8 @@ class MoldModel(Task):
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_directory,
             lambda path: None if path is None else path.parent)
 
-        for property in [
-            self.properties.busy,
-            self.properties.done,
-        ]:
-            property.notify.connect(self.checkProgressVisible)
-
     def logLine(self, text):
         self.lineLogged.emit(text)
-
-    def checkProgressVisible(self):
-        self.show_progress = self.busy or self.done
 
     def readyTriggers(self):
         return [
@@ -205,6 +194,11 @@ class MoldModel(Task):
             return
         self.worker.reset()
         self.busy = False
+
+    def clear(self):
+        self.result_diagnosis = None
+        self.result_pairwise = None
+        self.done = False
 
     def onDone(self, report):
         super().onDone(report)

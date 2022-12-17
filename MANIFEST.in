@@ -10,5 +10,6 @@ include LICENSE.txt
 include setup.py
 
 # Recursively include all common resources
-recursive-include src/itaxotools/mold/gui/logos *
 recursive-include src/itaxotools/mold/gui/docs *
+recursive-include src/itaxotools/mold/gui/icons *
+recursive-include src/itaxotools/mold/gui/logos *

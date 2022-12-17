@@ -589,7 +589,7 @@ class MoldView(TaskView):
 
         self.binder.bind(object.properties.busy, self.setBusy)
         self.binder.bind(object.properties.busy, self.cards.progress.setBusy)
-        self.binder.bind(object.properties.show_progress, self.cards.progress.setVisible)
+        self.binder.bind(object.properties.editable, self.cards.progress.setVisible, lambda editable: not editable)
         self.binder.bind(object.lineLogged, self.cards.progress.controls.logger.append)
         self.binder.bind(object.started, self.handleStarted)
         self.binder.bind(object.notification, self.showNotification)
@@ -684,5 +684,9 @@ class MoldView(TaskView):
         self.object.start()
 
     def stop(self):
-        if self.getConfirmation('Stop', 'Are you sure you want to stop the ongoing diagnosis?'):
+        if self.getConfirmation('Stop diagnosis', 'Are you sure you want to stop the ongoing diagnosis?'):
             self.object.stop()
+
+    def clear(self):
+        if self.getConfirmation('Clear results', 'Are you sure you want to clear all results and try again?'):
+            self.object.clear()

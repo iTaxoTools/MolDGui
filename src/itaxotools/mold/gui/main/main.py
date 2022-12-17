@@ -61,25 +61,37 @@ class Main(ToolDialog):
         """Populate dialog actions"""
         self.actions = AttrDict()
 
-        self.actions.open = QtGui.QAction('&Open', self)
-        self.actions.open.setIcon(app.resources.icons.open)
-        self.actions.open.setShortcut(QtGui.QKeySequence.Open)
-        self.actions.open.setStatusTip('Open an existing file')
+        action = QtGui.QAction('&Open', self)
+        action.setIcon(app.resources.icons.open)
+        action.setShortcut(QtGui.QKeySequence.Open)
+        action.setStatusTip('Open an existing file')
+        self.actions.open = action
 
-        self.actions.save = QtGui.QAction('&Save all', self)
-        self.actions.save.setIcon(app.resources.icons.save)
-        self.actions.save.setShortcut(QtGui.QKeySequence.Save)
-        self.actions.save.setStatusTip('Save results')
+        action = QtGui.QAction('&Save all', self)
+        action.setIcon(app.resources.icons.save)
+        action.setShortcut(QtGui.QKeySequence.Save)
+        action.setStatusTip('Save results')
+        self.actions.save = action
 
-        self.actions.start = QtGui.QAction('&Run', self)
-        self.actions.start.setIcon(app.resources.icons.run)
-        self.actions.start.setShortcut('Ctrl+R')
-        self.actions.start.setStatusTip('Run MolD')
+        action = QtGui.QAction('&Run', self)
+        action.setIcon(app.resources.icons.run)
+        action.setShortcut('Ctrl+R')
+        action.setStatusTip('Run MolD')
+        self.actions.start = action
 
-        self.actions.stop = QtGui.QAction('&Stop', self)
-        self.actions.stop.setIcon(app.resources.icons.stop)
-        self.actions.stop.setStatusTip('Stop MolD')
-        self.actions.stop.setVisible(False)
+        action = QtGui.QAction('S&top', self)
+        action.setIcon(app.resources.icons.stop)
+        action.setShortcut('Ctrl+T')
+        action.setStatusTip('Stop MolD')
+        action.setVisible(False)
+        self.actions.stop = action
+
+        action = QtGui.QAction('Cl&ear', self)
+        action.setIcon(app.resources.icons.clear)
+        action.setShortcut('Ctrl+E')
+        action.setStatusTip('Stop MolD')
+        action.setVisible(False)
+        self.actions.clear = action
 
     def draw(self):
         """Draw all contents"""

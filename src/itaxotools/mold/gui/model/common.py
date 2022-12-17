@@ -60,6 +60,7 @@ class Task(Object):
     ready = Property(bool, True)
     busy = Property(bool, False)
     done = Property(bool, False)
+    editable = Property(bool, True)
 
     counters = defaultdict(lambda: itertools.count(1, 1))
 
@@ -74,6 +75,12 @@ class Task(Object):
 
         for property in self.readyTriggers():
             property.notify.connect(self.checkIfReady)
+
+        for property in [
+            self.properties.busy,
+            self.properties.done,
+        ]:
+            property.notify.connect(self.checkEditable)
 
     @classmethod
     def _get_next_name(cls):
@@ -129,6 +136,9 @@ class Task(Object):
     def isReady(self) -> bool:
         """Overload this to check if ready"""
         return False
+
+    def checkEditable(self):
+        self.editable = not (self.busy or self.done)
 
     def run(self):
         """Called by start(). Overload this with calls to exec()"""

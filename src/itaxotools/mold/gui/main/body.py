@@ -62,11 +62,12 @@ class Body(QtWidgets.QStackedWidget):
         self.binder.bind(self.actions.save.triggered, view.save)
         self.binder.bind(self.actions.start.triggered, view.start)
         self.binder.bind(self.actions.stop.triggered, view.stop)
+        self.binder.bind(self.actions.clear.triggered, view.clear)
 
         self.binder.bind(object.properties.ready, self.actions.start.setEnabled)
-        self.binder.bind(object.properties.done, self.actions.save.setEnabled)
-        self.binder.bind(object.properties.busy, self.actions.start.setVisible, lambda busy: not busy)
+        self.binder.bind(object.properties.editable, self.actions.start.setVisible)
         self.binder.bind(object.properties.busy, self.actions.stop.setVisible)
-
+        self.binder.bind(object.properties.done, self.actions.save.setEnabled)
+        self.binder.bind(object.properties.done, self.actions.clear.setVisible)
 
         return True

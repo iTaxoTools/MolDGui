@@ -63,6 +63,8 @@ icons = ResourceLoader(
         _get_common('icons/svg/run.svg'), skin.colormap),
     stop = lambda: VectorIcon(
         _get_common('icons/svg/stop.svg'), skin.colormap),
+    clear = lambda: VectorIcon(
+        _get_local('icons/clear.svg'), skin.colormap),
     app = lambda: QtGui.QIcon(
         _get_local('logos/mold_d.ico')),
 )
