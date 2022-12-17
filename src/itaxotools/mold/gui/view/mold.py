@@ -461,7 +461,8 @@ class ExpandableCard(Card):
         self.draw_title(label_text)
         self.draw_contents()
 
-        self.controls.title.toggled.connect(self.controls.contents.setVisible)
+        self.controls.title.toggled.connect(self.handleToggled)
+
         self.controls.title.setChecked(False)
         self.controls.contents.setVisible(False)
 
@@ -481,6 +482,10 @@ class ExpandableCard(Card):
         self.addWidget(widget)
 
         self.controls.contents = widget
+
+    def handleToggled(self, checked):
+        self.controls.contents.setVisible(checked)
+        QtCore.QTimer.singleShot(10, self.update)
 
 
 class ResultViewer(Card):

@@ -381,23 +381,34 @@ class SpinningCircle(QtWidgets.QWidget):
 class CategoryButton(QtWidgets.QAbstractButton):
     def __init__(self, text, parent=None):
         super().__init__(parent)
+        self.setCursor(QtCore.Qt.PointingHandCursor)
         self.setSizePolicy(
-            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Maximum,
             QtWidgets.QSizePolicy.Policy.Preferred)
+        self.setMouseTracking(True)
         self.setCheckable(True)
         self.setText(text)
+        self.hovered = False
+        self.triangle_pixels = 38
 
         self.toggled.connect(self.handleChecked)
 
-    def handleChecked(self, checked):
-        print(checked)
+    def enterEvent(self, event):
+        self.hovered = True
 
-    def sizeHint(self):
-        print(self.fontMetrics().size(QtCore.Qt.TextSingleLine, self.text()))
+    def leaveEvent(self, event):
+        self.hovered = False
+
+    def handleChecked(self, checked):
+        self.checked = checked
+
+    def _fontSize(self):
         return self.fontMetrics().size(QtCore.Qt.TextSingleLine, self.text())
 
+    def sizeHint(self):
+        return self._fontSize() + QtCore.QSize(self.triangle_pixels, 0)
+
     def paintEvent(self, event):
-        print('paint godamnit!')
         painter = QtGui.QPainter()
         painter.begin(self)
 
@@ -405,15 +416,38 @@ class CategoryButton(QtWidgets.QAbstractButton):
         weak = palette.color(QtGui.QPalette.Mid)
         bold = palette.color(QtGui.QPalette.Shadow)
 
-        if self.isChecked():
-            painter.fillRect(self.rect(), bold)
-        else:
-            painter.fillRect(self.rect(), weak)
+        up_triangle = QtGui.QPolygon([
+            QtCore.QPoint(-6, 3),
+            QtCore.QPoint(6, 3),
+            QtCore.QPoint(0, -3)])
 
-        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        # painter.setBrush(QtCore.Qt.NoBrush)
-        #
-        # painter.setPen(QtGui.QPen(bold, 1, QtCore.Qt.SolidLine))
-        painter.drawText(self.rect(), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, self.text())
+        down_triangle = QtGui.QPolygon([
+            QtCore.QPoint(-6, -3),
+            QtCore.QPoint(6, -3),
+            QtCore.QPoint(0, 3)])
+
+        if self.isChecked():
+            triangle = up_triangle
+        else:
+            triangle = down_triangle
+
+        rect = QtCore.QRect(QtCore.QPoint(0, 0), self._fontSize())
+
+        painter.drawText(rect, QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, self.text())
+
+        if self.hovered:
+            painter.save()
+            painter.translate(0, -1)
+            painter.setPen(QtGui.QPen(bold, 1, QtCore.Qt.SolidLine))
+            painter.drawLine(rect.bottomLeft(), rect.bottomRight())
+            painter.restore()
+
+        painter.save()
+        painter.translate(self._fontSize().width(), self._fontSize().height() / 2)
+        painter.translate(self.triangle_pixels / 2, 1)
+        painter.setPen(QtCore.Qt.NoPen)
+        painter.setBrush(QtGui.QBrush(bold))
+        painter.drawPolygon(triangle)
+        painter.restore()
 
         painter.end()
