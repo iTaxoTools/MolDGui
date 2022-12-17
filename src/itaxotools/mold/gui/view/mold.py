@@ -269,15 +269,12 @@ class ModeSelector(Card):
 
     modes = []
     mode_text = 'Mode Selection'
-    line_text = 'Line text:'
     list_text = 'List text.'
-    line_placeholder = 'Line placeholder...'
     list_placeholder = 'List placeholder...'
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.draw_modes()
-        self.draw_line()
         self.draw_list()
 
     def draw_modes(self):
@@ -302,41 +299,20 @@ class ModeSelector(Card):
         layout.setSpacing(32)
         layout.addWidget(label)
         layout.addSpacing(8)
-        layout.addLayout(radios, 1)
+        layout.addLayout(radios, 3)
+        layout.addStretch(1)
         layout.addSpacing(32)
         self.addLayout(layout)
 
-    def draw_line(self):
-        label = LongLabel(self.line_text)
-
-        line = GLineEdit()
-        line.setPlaceholderText(self.line_placeholder)
-
-        layout = QtWidgets.QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(label)
-        layout.addWidget(line, 1)
-
-        widget = QtWidgets.QWidget()
-        widget.setLayout(layout)
-        self.addWidget(widget)
-
-        self.controls.section_line = widget
-        self.controls.line = line
-
     def draw_list(self):
         label = LongLabel(self.list_text)
-        label.setFixedWidth(134)
-        label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
         list = GrowingTextEdit()
         list.setPlaceholderText(self.list_placeholder)
 
-        layout = QtWidgets.QHBoxLayout()
-        layout.setSpacing(32)
+        layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(label)
-        layout.addSpacing(8)
         layout.addWidget(list, 1)
 
         widget = QtWidgets.QWidget()
@@ -351,48 +327,47 @@ class ModeSelector(Card):
         QtCore.QTimer.singleShot(10, self.update)
 
     def handleToggle(self, mode):
-        self.controls.section_line.setVisible(True)
         self.controls.section_list.setVisible(True)
 
 
 class TaxonSelector(ModeSelector):
     modes = TaxonSelectMode
     mode_text = 'Taxon Selection'
-    line_text = 'List of taxa (comma-separated) or other pattern that will be used as the qTaxa parameter of the active configuration:'
     list_text = (
-        'Enter a list of taxa, separated by new lines. \n\n'
-        'Combine taxa using the plus ("+") symbol.'
+        'Please enter a list of taxa for diagnosis, separated by commas or new lines. '
+        'You may merge many taxa together as one by using the "+" symbol. '
+        'They will be used as the qTaxa parameter of the active configuration. '
+        'Also accepts any other patterns mentioned in the manual, such as "ALL" and ">N". '
     )
-    line_placeholder = 'ALL, >N, P:pattern, P+:pattern, Taxon1, Taxon2+Taxon3, ...'
-    list_placeholder = 'Taxon1\nTaxon2+Taxon3\nTaxon4+Taxon5+Taxon6\n...'
+    list_placeholder = (
+        'ALL, >N, P:pattern, P+:pattern, Taxon1, Taxon2 + Taxon3, ...\n'
+        'Taxon4 + Taxon5 + Taxon6\n...'
+    )
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
     def handleToggle(self, mode):
-        self.controls.section_line.setVisible(mode == TaxonSelectMode.Line)
         self.controls.section_list.setVisible(mode == TaxonSelectMode.List)
 
 
 class PairwiseSelector(ModeSelector):
     modes = PairwiseSelectMode
     mode_text = 'Pairwise Selection'
-    line_text = (
-        'List of taxon pairs (comma-separated) or other pattern that will be used as the qTaxa parameter of the active configuration. '
+    list_text = (
+        'Please enter a list of taxon combinations, separated by commas or new lines. '
+        'Combinations are defined using two or more taxon names, joined by "VS". '
         'This is appended to any other qTaxa options from the taxon selection above.'
     )
-    list_text = (
-        'Enter a list of taxon pairs, joined with "VS", separated by new lines. \n\n'
-        'Many pairs can be defined at once by using multiple "VS" in one line.'
+    list_placeholder = (
+        'Taxon1 VS ALL, Taxon2 VS Taxon3, ...\n'
+        'Taxon4 VS Taxon5 VS Taxon6\n...'
     )
-    line_placeholder = 'Taxon1VSALL, Taxon2VSTaxon3, Taxon4VSTaxon5VSTaxon6, ...'
-    list_placeholder = 'Taxon1VSALL\nTaxon2VSTaxon3\nTaxon4VSTaxon5VSTaxon6\n...'
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
     def handleToggle(self, mode):
-        self.controls.section_line.setVisible(mode == PairwiseSelectMode.Line)
         self.controls.section_list.setVisible(mode == PairwiseSelectMode.List)
 
 
@@ -720,15 +695,11 @@ class MoldView(TaskView):
 
         self.binder.bind(self.cards.taxa.toggled, object.properties.taxon_mode)
         self.binder.bind(object.properties.taxon_mode, self.cards.taxa.setMode)
-        self.binder.bind(self.cards.taxa.controls.line.textEditedSafe, object.properties.taxon_line)
-        self.binder.bind(object.properties.taxon_line, self.cards.taxa.controls.line.setText)
         self.binder.bind(self.cards.taxa.controls.list.textEditedSafe, object.properties.taxon_list)
         self.binder.bind(object.properties.taxon_list, self.cards.taxa.controls.list.setText)
 
         self.binder.bind(self.cards.pairs.toggled, object.properties.pairs_mode)
         self.binder.bind(object.properties.pairs_mode, self.cards.pairs.setMode)
-        self.binder.bind(self.cards.pairs.controls.line.textEditedSafe, object.properties.pairs_line)
-        self.binder.bind(object.properties.pairs_line, self.cards.pairs.controls.line.setText)
         self.binder.bind(self.cards.pairs.controls.list.textEditedSafe, object.properties.pairs_list)
         self.binder.bind(object.properties.pairs_list, self.cards.pairs.controls.list.setText)
 

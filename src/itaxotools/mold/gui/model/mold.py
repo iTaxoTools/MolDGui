@@ -85,11 +85,9 @@ class MoldModel(Task):
     sequence_path = Property(Path, None)
 
     taxon_mode = Property(TaxonSelectMode, TaxonSelectMode.All)
-    taxon_line = Property(str, '')
     taxon_list = Property(str, '')
 
     pairs_mode = Property(PairwiseSelectMode, PairwiseSelectMode.All)
-    pairs_line = Property(str, '')
     pairs_list = Property(str, '')
 
     taxon_rank = Property(TaxonRank, TaxonRank.Species)
@@ -130,10 +128,8 @@ class MoldModel(Task):
         return [
             self.properties.sequence_path,
             self.properties.taxon_mode,
-            self.properties.taxon_line,
             self.properties.taxon_list,
             self.properties.pairs_mode,
-            self.properties.pairs_line,
             self.properties.pairs_list,
         ]
 
@@ -145,14 +141,8 @@ class MoldModel(Task):
             self.pairs_mode == PairwiseSelectMode.No
         )):
             return False
-        if self.taxon_mode == TaxonSelectMode.Line:
-            if self.taxon_line == '':
-                return False
         if self.taxon_mode == TaxonSelectMode.List:
             if self.taxon_list == '':
-                return False
-        if self.pairs_mode == PairwiseSelectMode.Line:
-            if self.pairs_line == '':
                 return False
         if self.pairs_mode == PairwiseSelectMode.List:
             if self.pairs_list == '':
@@ -173,15 +163,11 @@ class MoldModel(Task):
         qTaxa = []
         if self.taxon_mode == TaxonSelectMode.All:
             qTaxa.append('ALL')
-        elif self.taxon_mode == TaxonSelectMode.Line:
-            qTaxa.append(self.taxon_line)
         elif self.taxon_mode == TaxonSelectMode.List:
             qTaxa.append(self.taxon_list.replace('\n', ','))
 
         if self.pairs_mode == PairwiseSelectMode.All:
             qTaxa.append('ALLVSALL')
-        elif self.pairs_mode == PairwiseSelectMode.Line:
-            qTaxa.append(self.pairs_line)
         elif self.pairs_mode == PairwiseSelectMode.List:
             qTaxa.append(self.pairs_list.replace('\n', ','))
 
@@ -269,12 +255,10 @@ class MoldModel(Task):
             else:
                 taxa.append(inflate(x, '+'))
 
-        self.taxon_mode = TaxonSelectMode.Line
-        self.taxon_line = ', '.join(taxa)
+        self.taxon_mode = TaxonSelectMode.List
         self.taxon_list = '\n'.join(taxa) + '\n'
 
-        self.pairs_mode = PairwiseSelectMode.Line
-        self.pairs_line = ', '.join(pairs)
+        self.pairs_mode = PairwiseSelectMode.List
         self.pairs_list = '\n'.join(pairs) + '\n'
 
     def save_diagnosis(self, path):

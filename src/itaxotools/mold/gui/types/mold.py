@@ -23,8 +23,7 @@ from pathlib import Path
 
 class TaxonSelectMode(Enum):
     All = 'All taxa'
-    List = 'From taxon list'
-    Line = 'From configuration line'
+    List = 'From list'
     No = 'None'
 
     def __str__(self):
@@ -33,8 +32,7 @@ class TaxonSelectMode(Enum):
 
 class PairwiseSelectMode(Enum):
     All = 'All pairs'
-    List = 'From pair list'
-    Line = 'From configuration line'
+    List = 'From list'
     No = 'None'
 
     def __str__(self):
