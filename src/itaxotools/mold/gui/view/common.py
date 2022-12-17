@@ -55,7 +55,7 @@ class ObjectView(QtWidgets.QFrame):
         msgBox.setText(notification.text)
         msgBox.setDetailedText(notification.info)
         msgBox.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        msgBox.exec()
+        self.window().msgShow(msgBox)
 
     def getOpenPath(self, caption='Open File', dir='', filter=''):
         filename, _ = QtWidgets.QFileDialog.getOpenFileName(

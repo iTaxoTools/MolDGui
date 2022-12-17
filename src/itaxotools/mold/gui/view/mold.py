@@ -675,12 +675,12 @@ class MoldView(TaskView):
     def viewDiagnosis(self, text, path):
         dialog = ResultDialog(text, path, self.window())
         dialog.save.connect(self.saveDiagnosis)
-        dialog.show()
+        self.window().msgShow(dialog)
 
     def viewPairwise(self, text, path):
         dialog = ResultDialog(text, path, self.window())
         dialog.save.connect(self.savePairwise)
-        dialog.show()
+        self.window().msgShow(dialog)
 
     def saveDiagnosis(self):
         path = self.getSavePath('Save Molecular Diagnosis', str(self.object.suggested_diagnosis))
