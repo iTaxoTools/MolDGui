@@ -178,6 +178,10 @@ class MoldModel(Task):
         qTaxa = (x for x in qTaxa if x)
         qTaxa = list(qTaxa)
 
+        for property in chain(self.mdnc.properties, self.rdns.properties):
+            if property.value is None or property.value == '':
+                property.value = property.default
+
         self.exec(
             None,
             main_wrapper,
