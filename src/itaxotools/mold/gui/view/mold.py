@@ -607,6 +607,8 @@ class MoldView(TaskView):
         self.binder.bind(object.properties.configuration_path, self.cards.configuration.setVisible, lambda path: path is not None)
         self.binder.bind(object.properties.configuration_path, self.cards.configuration.setPath)
         self.binder.bind(object.properties.sequence_path, self.cards.sequence.setPath)
+        self.binder.bind(object.properties.configuration_path, self.updateWindowTitle)
+        self.binder.bind(object.properties.sequence_path, self.updateWindowTitle)
 
         self.binder.bind(self.cards.taxa.toggled, object.properties.taxon_mode)
         self.binder.bind(object.properties.taxon_mode, self.cards.taxa.setMode)
@@ -635,6 +637,17 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.diagnosis.save, self.saveDiagnosis)
         self.binder.bind(self.cards.pairwise.view, self.viewPairwise)
         self.binder.bind(self.cards.pairwise.save, self.savePairwise)
+
+    def updateWindowTitle(self):
+        if self.object.configuration_path:
+            filename = self.object.configuration_path.name
+        elif self.object.sequence_path:
+            filename = self.object.sequence_path.name
+        else:
+            filename = None
+
+        title = f'{app.title} - {filename}' if filename else app.title
+        self.window().setWindowTitle(title)
 
     def handleStarted(self):
         self.cards.progress.controls.logger.clear()
