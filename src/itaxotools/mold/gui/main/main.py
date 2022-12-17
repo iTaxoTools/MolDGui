@@ -81,7 +81,7 @@ class Main(ToolDialog):
 
         action = QtGui.QAction('S&top', self)
         action.setIcon(app.resources.icons.stop)
-        action.setShortcut('Ctrl+T')
+        action.setShortcut(QtGui.QKeySequence.Cancel)
         action.setStatusTip('Stop MolD')
         action.setVisible(False)
         self.actions.stop = action
