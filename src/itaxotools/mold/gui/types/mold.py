@@ -68,10 +68,10 @@ class GapsAsCharacters(str, Enum):
 
 
 class ScoringThreshold(str, Enum):
-    Lousy = 'lousy', 'Lousy'
-    Moderate = 'moderate', 'Moderate'
-    Stringent = 'stringent', 'Stringent'
-    VeryStringent = 'very_stringent', 'Very Stringent'
+    Lousy = 'lousy', 'Lousy (66)'
+    Moderate = 'moderate', 'Moderate (75)'
+    Stringent = 'stringent', 'Stringent (90)'
+    VeryStringent = 'very_stringent', 'Very Stringent (95)'
 
     def __new__(cls, code, label):
         obj = str.__new__(cls, code)
@@ -81,30 +81,30 @@ class ScoringThreshold(str, Enum):
 
 
 class PropertyEnum(Enum):
-    def __init__(self, label, description, config, key, default):
-        self.label = label  # for Gui
-        self.description = description  # for Gui
+    def __init__(self, config, key, default, label, description):
         self.config = config  # configuration file key (uppercase)
         self.key = key  # model key
         self.default = default  # model value
+        self.label = label  # for Gui
+        self.description = description  # for Gui
 
     def __repr__(self):
         return f'<{self.__class__.__name__}.{self._name_}>'
 
 
 class AdvancedMDNCProperties(PropertyEnum):
-    Cutoff = 'Cutoff', '', 'CUTOFF', 'cutoff', '100'
-    Nucleotides = 'Nucleotides', '', 'NUMBERN', 'nucleotides', 5
-    Iterations = 'Iterations', '', 'NUMBER_OF_ITERATIONS', 'iterations', 10000
-    MaxLen1 = 'MaxLen1', '', 'MAXLEN1', 'max_length_raw', 12
-    MaxLen2 = 'MaxLen2', '', 'MAXLEN2', 'max_length_refined', 7
-    Iref = 'Iref', '', 'IREF', 'indexing_reference', 'NO'
+    Cutoff = 'CUTOFF', 'cutoff', '100', 'Cutoff', 'number of informative sites to be considered'
+    Nucleotides = 'NUMBERN', 'nucleotides', 5, 'NumberN', 'number of ambiguously called nucleotides allowed',
+    Iterations = 'NUMBER_OF_ITERATIONS', 'iterations', 10000, 'Iterations', 'number of iterations of MolD'
+    MaxLen1 = 'MAXLEN1', 'max_length_raw', 12, 'MaxLen1', 'maximum length of draft DNCs'
+    MaxLen2 = 'MAXLEN2', 'max_length_refined', 7, 'MaxLen2', 'maximum length of refined mDNCs'
+    Iref = 'IREF', 'indexing_reference', 'NO', 'Iref', 'indexing reference sequence'
 
 
 class AdvancedRDNSProperties(PropertyEnum):
-    Pdiff = 'Pdiff', '', 'PDIFF', 'p_diff', None
-    NmaxSeq = 'NmaxSeq', '', 'NMAXSEQ', 'n_max', 5
-    Scoring = 'Scoring', '', 'SCORING', 'scoring', ScoringThreshold.Moderate
+    Pdiff = 'PDIFF', 'p_diff', None, 'Pdiff', 'percent difference between original and modified sequences',
+    NmaxSeq = 'NMAXSEQ', 'n_max', 5, 'NmaxSeq', 'maximum number of sequences per taxon to modify',
+    Scoring = 'SCORING', 'scoring', ScoringThreshold.Moderate, 'Scoring', 'determines the scoring threshold out of 100 tests',
 
 
 class MoldResults(NamedTuple):

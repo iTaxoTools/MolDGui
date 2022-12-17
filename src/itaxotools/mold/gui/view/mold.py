@@ -19,14 +19,15 @@
 from PySide6 import QtCore, QtWidgets, QtGui
 
 from pathlib import Path
+from collections import defaultdict
 
 from itaxotools.common.utility import AttrDict, override
 from itaxotools.common.widgets import VLineSeparator
 
 from .. import app
-from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
+from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, ScoringThreshold, GapsAsCharacters, AdvancedMDNCProperties, AdvancedRDNSProperties
 from ..files import is_fasta
-from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle, CategoryButton
+from .common import Card, TaskView, GLineEdit, GTextEdit, NoWheelComboBox, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle, CategoryButton
 
 
 class GrowingTextEdit(GTextEdit):
@@ -489,14 +490,51 @@ class ExpandableCard(Card):
 
     def setContentsEnabled(self, enable):
         self.controls.contents.setEnabled(enable)
-        
 
-class MDNCSelector(ExpandableCard):
+
+class ExpandableEnumCard(ExpandableCard):
+    title = 'Expandable Enum Card'
+    enum = []
+    widget_types = defaultdict(lambda: GLineEdit)
+
+    def draw_contents(self):
+        layout = QtWidgets.QGridLayout()
+        layout.setContentsMargins(8, 0, 0, 0)
+        layout.setColumnStretch(2, 1)
+        layout.setSpacing(16)
+
+        for row, entry in enumerate(self.enum):
+            label = QtWidgets.QLabel(f'<b>{entry.label}:</b>')
+            widget_type = self.widget_types[entry]
+            edit = widget_type()
+            edit.setFixedWidth(100)
+            description = QtWidgets.QLabel(f'{entry.description}.')
+            layout.addWidget(label, row, 0)
+            layout.addWidget(edit, row, 1)
+            layout.addWidget(description, row, 2)
+            self.controls[entry.key] = edit
+
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        self.addWidget(widget)
+
+        self.controls.contents = widget
+
+
+class MDNCSelector(ExpandableEnumCard):
     title = 'Advanced parameters for mDNC recovery'
+    enum = AdvancedMDNCProperties
 
 
-class RDNSSelector(ExpandableCard):
+class RDNSSelector(ExpandableEnumCard):
     title = 'Parameters of artificial datasets (only rDNSs)'
+    enum = AdvancedRDNSProperties
+    widget_types = defaultdict(lambda: GLineEdit, {enum.Scoring: NoWheelComboBox})
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        for threshold in ScoringThreshold:
+            self.controls.scoring.addItem(threshold.label, threshold.value)
 
 
 class ResultViewer(Card):
