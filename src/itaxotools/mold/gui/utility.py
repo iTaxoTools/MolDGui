@@ -211,10 +211,9 @@ class EnumObjectMeta(PropertyMeta):
             return super().__new__(cls, name, bases, attrs)
 
         get_key = attrs.get('get_key', lambda x: x.key)
-        get_type = attrs.get('get_type', lambda x: x.type)
         get_default = attrs.get('get_default', lambda x: x.default)
         for field in enum:
-            attrs[get_key(field)] = Property(get_type(field), get_default(field))
+            attrs[get_key(field)] = Property(object, get_default(field))
         return super().__new__(cls, name, bases, attrs)
 
 

@@ -25,8 +25,8 @@ from pathlib import Path
 from shutil import copy
 
 from ..files import check_sequence_file, parse_configuration_file
-from ..utility import Property, Instance, Binder
-from ..types import Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
+from ..utility import Property, Instance, Binder, PropertyObject, EnumObject
+from ..types import AdvancedDNCProperties, Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
 from ..threading import TextEditLoggerIO
 from .common import Task
 
@@ -52,11 +52,23 @@ def main_wrapper(workdir: Path, confdir: Path, input_path: Path, **kwargs):
     if confdir and not input_path.exists() and not input_path.is_absolute():
         input_path = confdir / input_path
 
+    print('  GUI PARAMETERS  '.center(58, '#'))
+    print('')
+    print('tmpfname', '=', input_path)
+    print('outfname', '=', output_path)
+    for k,v in kwargs.items():
+        print(k, '=', repr(v))
+    print('')
+
     main(tmpfname=str(input_path), outfname=str(output_path), **kwargs)
 
     if not pairwise_path.exists():
         pairwise_path = None
     return MoldResults(output_path, pairwise_path)
+
+
+class AdvancedDNCModel(EnumObject):
+    enum = AdvancedDNCProperties
 
 
 class MoldModel(Task):
@@ -78,6 +90,8 @@ class MoldModel(Task):
 
     taxon_rank = Property(TaxonRank, TaxonRank.Species)
     gaps_as_characters = Property(GapsAsCharacters, GapsAsCharacters.Yes)
+
+    advanced_mdnc = Property(AdvancedDNCModel, Instance)
 
     result_diagnosis = Property(Path, None)
     result_pairwise = Property(Path, None)
@@ -180,12 +194,12 @@ class MoldModel(Task):
             taxalist = ','.join(qTaxa),
             taxonrank = self.taxon_rank.code,
             gapsaschars = self.gaps_as_characters.code,
-            cutoff = '100',
-            numnucl = 5,
-            numiter = 10000,
-            maxlenraw = 12,
-            maxlenrefined = 7,
-            iref = 'NO',
+            cutoff = self.advanced_mdnc.cutoff,
+            numnucl = self.advanced_mdnc.nucleotides,
+            numiter = self.advanced_mdnc.iterations,
+            maxlenraw = self.advanced_mdnc.max_length_raw,
+            maxlenrefined = self.advanced_mdnc.max_length_refined,
+            iref = self.advanced_mdnc.indexing_reference,
             pdiff = 1 if self.taxon_rank.code == 1 else 5,
             nmax = 10,
             thresh = 75,
@@ -217,11 +231,12 @@ class MoldModel(Task):
             'TAXON_RANK': self.properties.taxon_rank.set,
             'GAPS_AS_CHARS': self.properties.gaps_as_characters.set,
         }
+        for property in AdvancedDNCProperties:
+            reference[property.config] = self.advanced_mdnc.properties[property.key].set
         try:
             params = parse_configuration_file(path)
             for k, v in params.items():
-                if k in reference:
-                    reference[k](v)
+                reference[k](v)
             self.configuration_path = path
         except Exception as exception:
             self.notification.emit(Notification.Fail(str(exception)))

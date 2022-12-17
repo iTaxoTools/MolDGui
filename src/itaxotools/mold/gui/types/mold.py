@@ -67,6 +67,27 @@ class GapsAsCharacters(str, Enum):
         return obj
 
 
+class PropertyEnum(Enum):
+    def __init__(self, label, description, config, key, default):
+        self.label = label  # for Gui
+        self.description = description  # for Gui
+        self.config = config  # configuration file key (uppercase)
+        self.key = key  # model key
+        self.default = default  # model value
+
+    def __repr__(self):
+        return f'<{self.__class__.__name__}.{self._name_}>'
+
+
+class AdvancedDNCProperties(PropertyEnum):
+    Cutoff = 'Cutoff', '', 'CUTOFF', 'cutoff', '100'
+    Nucleotides = 'Nucleotides', '', 'NUMBERN', 'nucleotides', 5
+    Iterations = 'Iterations', '', 'NUMBER_OF_ITERATIONS', 'iterations', 10000
+    MaxLen1 = 'MaxLen1', '', 'MAXLEN1', 'max_length_raw', 12
+    MaxLen2 = 'MaxLen2', '', 'MAXLEN2', 'max_length_refined', 7
+    Iref = 'Iref', '', 'IREF', 'indexing_reference', 'NO'
+
+
 class MoldResults(NamedTuple):
     diagnosis: Path | None
     pairwise: Path | None
