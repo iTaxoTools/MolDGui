@@ -487,6 +487,9 @@ class ExpandableCard(Card):
         self.controls.contents.setVisible(checked)
         QtCore.QTimer.singleShot(10, self.update)
 
+    def setContentsEnabled(self, enable):
+        self.controls.contents.setEnabled(enable)
+        
 
 class MDNCSelector(ExpandableCard):
     title = 'Advanced parameters for mDNC recovery'
@@ -511,11 +514,11 @@ class ResultViewer(Card):
         check = QtWidgets.QLabel('\u2714')
         check.setStyleSheet("""font-size: 16px; color: Palette(Shadow);""")
 
-        view = QtWidgets.QPushButton('View')
-        view.clicked.connect(self.handleView)
-
         save = QtWidgets.QPushButton('Save')
         save.clicked.connect(self.handleSave)
+
+        view = QtWidgets.QPushButton('View')
+        view.clicked.connect(self.handleView)
 
         layout = QtWidgets.QHBoxLayout()
         layout.setSpacing(0)
@@ -523,9 +526,9 @@ class ResultViewer(Card):
         layout.addSpacing(12)
         layout.addWidget(label)
         layout.addStretch(1)
-        layout.addWidget(view)
-        layout.addSpacing(16)
         layout.addWidget(save)
+        layout.addSpacing(16)
+        layout.addWidget(view)
         self.addLayout(layout)
 
         self.controls.view = view
@@ -639,6 +642,12 @@ class MoldView(TaskView):
             self.cards.gaps,
         ]:
             self.binder.bind(object.properties.editable, card.setEnabled)
+
+        for card in [
+            self.cards.mdnc,
+            self.cards.rdns,
+        ]:
+            self.binder.bind(object.properties.editable, card.setContentsEnabled)
 
         self.binder.bind(object.properties.busy, self.cards.progress.setBusy)
         self.binder.bind(object.properties.editable, self.cards.progress.setVisible, lambda editable: not editable)
