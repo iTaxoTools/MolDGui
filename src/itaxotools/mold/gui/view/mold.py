@@ -587,7 +587,16 @@ class MoldView(TaskView):
         self.binder.bind(self.cards.configuration.browse, self.openConfiguration)
         self.binder.bind(self.cards.sequence.browse, self.openSequence)
 
-        self.binder.bind(object.properties.busy, self.setBusy)
+        for card in [
+            self.cards.configuration,
+            self.cards.sequence,
+            self.cards.taxa,
+            self.cards.pairs,
+            self.cards.rank,
+            self.cards.gaps,
+        ]:
+            self.binder.bind(object.properties.editable, card.setEnabled)
+
         self.binder.bind(object.properties.busy, self.cards.progress.setBusy)
         self.binder.bind(object.properties.editable, self.cards.progress.setVisible, lambda editable: not editable)
         self.binder.bind(object.lineLogged, self.cards.progress.controls.logger.append)
@@ -630,11 +639,6 @@ class MoldView(TaskView):
     def handleStarted(self):
         self.cards.progress.controls.logger.clear()
         self.parent().parent().verticalScrollBar().setValue(0)
-
-    def setBusy(self, busy):
-        for card in self.cards:
-            if card != self.cards.title and card != self.cards.progress:
-                card.setEnabled(not busy)
 
     def open(self):
         path = self.getOpenPath('Open sequences or configuration file')
