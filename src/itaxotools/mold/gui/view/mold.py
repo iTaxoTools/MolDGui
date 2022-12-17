@@ -26,7 +26,7 @@ from itaxotools.common.widgets import VLineSeparator
 from .. import app
 from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters
 from ..files import is_fasta
-from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle
+from .common import Card, TaskView, GLineEdit, GTextEdit, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle, CategoryButton
 
 
 class GrowingTextEdit(GTextEdit):
@@ -455,6 +455,34 @@ class GapsAsCharactersSelector(Card):
         self.controls.gaps.setValue(mode)
 
 
+class ExpandableCard(Card):
+    def __init__(self, label_text, parent=None):
+        super().__init__(parent)
+        self.draw_title(label_text)
+        self.draw_contents()
+
+        self.controls.title.toggled.connect(self.controls.contents.setVisible)
+        self.controls.title.setChecked(False)
+        self.controls.contents.setVisible(False)
+
+    def draw_title(self, label_text):
+        title = CategoryButton(label_text)
+        title.setStyleSheet("""font-size: 16px;""")
+        self.addWidget(title)
+
+        self.controls.title = title
+
+    def draw_contents(self):
+        layout = QtWidgets.QVBoxLayout()
+        layout.addWidget(QtWidgets.QLabel('test a'))
+        layout.addWidget(QtWidgets.QLabel('test b'))
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        self.addWidget(widget)
+
+        self.controls.contents = widget
+
+
 class ResultViewer(Card):
     view = QtCore.Signal(str, Path)
     save = QtCore.Signal(str, Path)
@@ -562,6 +590,7 @@ class MoldView(TaskView):
     def draw(self):
         self.cards = AttrDict()
         self.cards.title = TitleCard(self)
+        self.cards.expandable = ExpandableCard('Expandable card used for testing', self)
         self.cards.diagnosis = DiagnosisViewer(self)
         self.cards.pairwise = PairwiseViewer(self)
         self.cards.progress = ProgressCard(self)

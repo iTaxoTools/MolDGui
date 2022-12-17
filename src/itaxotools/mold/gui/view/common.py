@@ -377,3 +377,43 @@ class SpinningCircle(QtWidgets.QWidget):
         painter.drawArc(rect, degrees * 16, self.span * 16)
 
         painter.end()
+
+class CategoryButton(QtWidgets.QAbstractButton):
+    def __init__(self, text, parent=None):
+        super().__init__(parent)
+        self.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Minimum,
+            QtWidgets.QSizePolicy.Policy.Preferred)
+        self.setCheckable(True)
+        self.setText(text)
+
+        self.toggled.connect(self.handleChecked)
+
+    def handleChecked(self, checked):
+        print(checked)
+
+    def sizeHint(self):
+        print(self.fontMetrics().size(QtCore.Qt.TextSingleLine, self.text()))
+        return self.fontMetrics().size(QtCore.Qt.TextSingleLine, self.text())
+
+    def paintEvent(self, event):
+        print('paint godamnit!')
+        painter = QtGui.QPainter()
+        painter.begin(self)
+
+        palette = QtGui.QGuiApplication.palette()
+        weak = palette.color(QtGui.QPalette.Mid)
+        bold = palette.color(QtGui.QPalette.Shadow)
+
+        if self.isChecked():
+            painter.fillRect(self.rect(), bold)
+        else:
+            painter.fillRect(self.rect(), weak)
+
+        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        # painter.setBrush(QtCore.Qt.NoBrush)
+        #
+        # painter.setPen(QtGui.QPen(bold, 1, QtCore.Qt.SolidLine))
+        painter.drawText(self.rect(), QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter, self.text())
+
+        painter.end()
