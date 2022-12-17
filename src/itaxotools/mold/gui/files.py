@@ -20,7 +20,7 @@
 
 from pathlib import Path
 
-from .types import TaxonRank, GapsAsCharacters
+from .types import TaxonRank, GapsAsCharacters, ScoringThreshold
 
 
 def is_fasta(path):
@@ -58,9 +58,9 @@ def parse_configuration_file(path):
         'MAXLEN1': lambda x: int(x) if x != '' else None,
         'MAXLEN2': lambda x: int(x) if x != '' else None,
         'IREF': lambda x: x if x != '' else None,
-        'PDIFF': None,
-        'NMAXSEQ': None,
-        'SCORING': None,
+        'PDIFF': lambda x: int(x) if x != '' else None,
+        'NMAXSEQ': lambda x: int(x) if x != '' else None,
+        'SCORING': lambda x: ScoringThreshold(x) if x != '' else None,
         'OUTPUT_FILE': None,
         'ORIG_FNAME': None,
     }

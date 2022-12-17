@@ -26,7 +26,7 @@ from shutil import copy
 
 from ..files import check_sequence_file, parse_configuration_file
 from ..utility import Property, Instance, Binder, PropertyObject, EnumObject
-from ..types import AdvancedDNCProperties, Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
+from ..types import AdvancedMDNCProperties, AdvancedRDNSProperties, Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
 from ..threading import TextEditLoggerIO
 from .common import Task
 
@@ -68,7 +68,11 @@ def main_wrapper(workdir: Path, confdir: Path, input_path: Path, **kwargs):
 
 
 class AdvancedDNCModel(EnumObject):
-    enum = AdvancedDNCProperties
+    enum = AdvancedMDNCProperties
+
+
+class AdvancedRDNSModel(EnumObject):
+    enum = AdvancedRDNSProperties
 
 
 class MoldModel(Task):
@@ -92,6 +96,7 @@ class MoldModel(Task):
     gaps_as_characters = Property(GapsAsCharacters, GapsAsCharacters.Yes)
 
     advanced_mdnc = Property(AdvancedDNCModel, Instance)
+    advanced_rdns = Property(AdvancedRDNSModel, Instance)
 
     result_diagnosis = Property(Path, None)
     result_pairwise = Property(Path, None)
@@ -115,6 +120,8 @@ class MoldModel(Task):
             lambda path: None if path is None else path.parent / f'{path.stem}.pairwise.out')
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_directory,
             lambda path: None if path is None else path.parent)
+        self.binder.bind(self.properties.taxon_rank, self.advanced_rdns.properties.p_diff,
+            lambda x: 1 if x.code == 1 else 5)
 
     def logLine(self, text):
         self.lineLogged.emit(text)
@@ -200,9 +207,9 @@ class MoldModel(Task):
             maxlenraw = self.advanced_mdnc.max_length_raw,
             maxlenrefined = self.advanced_mdnc.max_length_refined,
             iref = self.advanced_mdnc.indexing_reference,
-            pdiff = 1 if self.taxon_rank.code == 1 else 5,
-            nmax = 10,
-            thresh = 75,
+            pdiff = self.advanced_rdns.p_diff,
+            nmax = self.advanced_rdns.n_max,
+            thresh = self.advanced_rdns.scoring.value,
         )
 
     def stop(self):
@@ -231,8 +238,10 @@ class MoldModel(Task):
             'TAXON_RANK': self.properties.taxon_rank.set,
             'GAPS_AS_CHARS': self.properties.gaps_as_characters.set,
         }
-        for property in AdvancedDNCProperties:
+        for property in AdvancedMDNCProperties:
             reference[property.config] = self.advanced_mdnc.properties[property.key].set
+        for property in AdvancedRDNSProperties:
+            reference[property.config] = self.advanced_rdns.properties[property.key].set
         try:
             params = parse_configuration_file(path)
             for k, v in params.items():
