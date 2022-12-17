@@ -85,6 +85,7 @@ class MoldModel(Task):
     suggested_diagnosis = Property(Path, None)
     suggested_pairwise = Property(Path, None)
     suggested_directory = Property(Path, None)
+    dirty_data = Property(bool, False)
 
     def __init__(self, name=None):
         super().__init__(name)
@@ -140,6 +141,7 @@ class MoldModel(Task):
     def start(self):
         self.busy = True
         self.busy_main = True
+        self.dirty_data = True
         self.started.emit()
 
         confdir = self.configuration_path.parent if self.configuration_path else None
@@ -193,17 +195,20 @@ class MoldModel(Task):
         if self.worker is None:
             return
         self.worker.reset()
+        self.dirty_data = False
         self.busy = False
 
     def clear(self):
         self.result_diagnosis = None
         self.result_pairwise = None
+        self.dirty_data = False
         self.done = False
 
     def onDone(self, report):
         super().onDone(report)
         self.result_diagnosis = report.result.diagnosis
         self.result_pairwise = report.result.pairwise
+        self.dirty_data = True
 
     def open_configuration_path(self, path):
         reference = {
@@ -257,3 +262,4 @@ class MoldModel(Task):
     def save_all(self, path):
         self.save_diagnosis(path / self.suggested_diagnosis.name)
         self.save_pairwise(path / self.suggested_pairwise.name)
+        self.dirty_data = False

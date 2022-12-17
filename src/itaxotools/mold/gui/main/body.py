@@ -70,4 +70,6 @@ class Body(QtWidgets.QStackedWidget):
         self.binder.bind(object.properties.done, self.actions.save.setEnabled)
         self.binder.bind(object.properties.done, self.actions.clear.setVisible)
 
+        self.binder.bind(object.properties.dirty_data, self.window().state.properties.dirty_data)
+
         return True

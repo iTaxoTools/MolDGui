@@ -29,9 +29,14 @@ from itaxotools.common.widgets import ToolDialog
 from .. import app
 from ..model import MoldModel
 from ..files import is_fasta
+from ..utility import PropertyObject, Property
 from .body import Body
 from .footer import Footer
 from .header import Header
+
+
+class MainState(PropertyObject):
+    dirty_data = Property(bool, False)
 
 
 class Main(ToolDialog):
@@ -48,6 +53,7 @@ class Main(ToolDialog):
         self.act()
         self.draw()
 
+        self.state = MainState()
         self.model = MoldModel('Molecular Diagnosis')
         self.widgets.body.showModel(self.model)
 
@@ -110,3 +116,8 @@ class Main(ToolDialog):
         layout.setSpacing(0)
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
+
+    def reject(self):
+        if self.state.dirty_data:
+            return super().reject()
+        return True
