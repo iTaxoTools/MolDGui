@@ -456,9 +456,11 @@ class GapsAsCharactersSelector(Card):
 
 
 class ExpandableCard(Card):
-    def __init__(self, label_text, parent=None):
+    title = 'Expandable Card'
+
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.draw_title(label_text)
+        self.draw_title()
         self.draw_contents()
 
         self.controls.title.toggled.connect(self.handleToggled)
@@ -466,8 +468,8 @@ class ExpandableCard(Card):
         self.controls.title.setChecked(False)
         self.controls.contents.setVisible(False)
 
-    def draw_title(self, label_text):
-        title = CategoryButton(label_text)
+    def draw_title(self):
+        title = CategoryButton(self.title)
         title.setStyleSheet("""font-size: 16px;""")
         self.addWidget(title)
 
@@ -475,8 +477,6 @@ class ExpandableCard(Card):
 
     def draw_contents(self):
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(QtWidgets.QLabel('test a'))
-        layout.addWidget(QtWidgets.QLabel('test b'))
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         self.addWidget(widget)
@@ -486,6 +486,14 @@ class ExpandableCard(Card):
     def handleToggled(self, checked):
         self.controls.contents.setVisible(checked)
         QtCore.QTimer.singleShot(10, self.update)
+
+
+class MDNCSelector(ExpandableCard):
+    title = 'Advanced parameters for mDNC recovery'
+
+
+class RDNSSelector(ExpandableCard):
+    title = 'Parameters of artificial datasets (only rDNSs)'
 
 
 class ResultViewer(Card):
@@ -595,7 +603,6 @@ class MoldView(TaskView):
     def draw(self):
         self.cards = AttrDict()
         self.cards.title = TitleCard(self)
-        self.cards.expandable = ExpandableCard('Expandable card used for testing', self)
         self.cards.diagnosis = DiagnosisViewer(self)
         self.cards.pairwise = PairwiseViewer(self)
         self.cards.progress = ProgressCard(self)
@@ -605,6 +612,8 @@ class MoldView(TaskView):
         self.cards.pairs = PairwiseSelector(self)
         self.cards.rank = TaxonRankSelector(self)
         self.cards.gaps = GapsAsCharactersSelector(self)
+        self.cards.mdnc = MDNCSelector(self)
+        self.cards.rdns = RDNSSelector(self)
 
         layout = QtWidgets.QVBoxLayout()
         for card in self.cards:
