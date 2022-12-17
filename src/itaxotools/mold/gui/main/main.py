@@ -40,7 +40,7 @@ class Main(ToolDialog):
     def __init__(self, parent=None, files=[]):
         super(Main, self).__init__(parent)
 
-        self.setWindowFlags(QtCore.Qt.Window)
+        self.title = app.title
         self.setWindowIcon(app.resources.icons.app)
         self.setWindowTitle(app.title)
         self.resize(700, 560)
