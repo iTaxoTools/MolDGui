@@ -27,6 +27,7 @@ from itaxotools.common.widgets import VLineSeparator
 from .. import app
 from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, ScoringThreshold, GapsAsCharacters, AdvancedMDNCProperties, AdvancedRDNSProperties
 from ..files import is_fasta
+from ..utility import type_convert
 from .common import Card, TaskView, GLineEdit, GTextEdit, NoWheelComboBox, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle, CategoryButton
 
 
@@ -526,15 +527,32 @@ class MDNCSelector(ExpandableEnumCard):
     enum = AdvancedMDNCProperties
 
 
+class ScoringCombobox(NoWheelComboBox):
+    valueChanged = QtCore.Signal(ScoringThreshold)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for threshold in ScoringThreshold:
+            self.addItem(threshold.label, threshold.value)
+        self.currentIndexChanged.connect(self.handleIndexChanged)
+
+    def handleIndexChanged(self, index):
+        data = self.itemData(index, QtCore.Qt.UserRole)
+        value = ScoringThreshold(data)
+        self.valueChanged.emit(value)
+
+    def setValue(self, value):
+        index = self.findData(value, QtCore.Qt.UserRole)
+        self.setCurrentIndex(index)
+
+
 class RDNSSelector(ExpandableEnumCard):
     title = 'Parameters of artificial datasets (only rDNSs)'
     enum = AdvancedRDNSProperties
-    widget_types = defaultdict(lambda: GLineEdit, {enum.Scoring: NoWheelComboBox})
+    widget_types = defaultdict(lambda: GLineEdit, {enum.Scoring: ScoringCombobox})
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        for threshold in ScoringThreshold:
-            self.controls.scoring.addItem(threshold.label, threshold.value)
 
 
 class ResultViewer(Card):
@@ -719,6 +737,33 @@ class MoldView(TaskView):
 
         self.binder.bind(self.cards.gaps.toggled, object.properties.gaps_as_characters)
         self.binder.bind(object.properties.gaps_as_characters, self.cards.gaps.setMode)
+
+        self.binder.bind(self.cards.mdnc.controls.cutoff.textEditedSafe, object.mdnc.properties.cutoff)
+        self.binder.bind(object.mdnc.properties.cutoff, self.cards.mdnc.controls.cutoff.setText)
+
+        self.binder.bind(self.cards.mdnc.controls.nucleotides.textEditedSafe, object.mdnc.properties.nucleotides, lambda x: type_convert(x, int, None))
+        self.binder.bind(object.mdnc.properties.nucleotides, self.cards.mdnc.controls.nucleotides.setText, lambda x: str(x) if x is not None else '')
+
+        self.binder.bind(self.cards.mdnc.controls.iterations.textEditedSafe, object.mdnc.properties.iterations, lambda x: type_convert(x, int, None))
+        self.binder.bind(object.mdnc.properties.iterations, self.cards.mdnc.controls.iterations.setText, lambda x: str(x) if x is not None else '')
+
+        self.binder.bind(self.cards.mdnc.controls.max_length_raw.textEditedSafe, object.mdnc.properties.max_length_raw, lambda x: type_convert(x, int, None))
+        self.binder.bind(object.mdnc.properties.max_length_raw, self.cards.mdnc.controls.max_length_raw.setText, lambda x: str(x) if x is not None else '')
+
+        self.binder.bind(self.cards.mdnc.controls.max_length_refined.textEditedSafe, object.mdnc.properties.max_length_refined, lambda x: type_convert(x, int, None))
+        self.binder.bind(object.mdnc.properties.max_length_refined, self.cards.mdnc.controls.max_length_refined.setText, lambda x: str(x) if x is not None else '')
+
+        self.binder.bind(self.cards.mdnc.controls.indexing_reference.textEditedSafe, object.mdnc.properties.indexing_reference)
+        self.binder.bind(object.mdnc.properties.indexing_reference, self.cards.mdnc.controls.indexing_reference.setText)
+
+        self.binder.bind(self.cards.rdns.controls.p_diff.textEditedSafe, object.rdns.properties.p_diff, lambda x: type_convert(x, int, None))
+        self.binder.bind(object.rdns.properties.p_diff, self.cards.rdns.controls.p_diff.setText, lambda x: str(x) if x is not None else '')
+
+        self.binder.bind(self.cards.rdns.controls.n_max.textEditedSafe, object.rdns.properties.n_max, lambda x: type_convert(x, int, None))
+        self.binder.bind(object.rdns.properties.n_max, self.cards.rdns.controls.n_max.setText, lambda x: str(x) if x is not None else '')
+
+        self.binder.bind(self.cards.rdns.controls.scoring.valueChanged, object.rdns.properties.scoring)
+        self.binder.bind(object.rdns.properties.scoring, self.cards.rdns.controls.scoring.setValue)
 
         self.binder.bind(object.properties.result_diagnosis, self.cards.diagnosis.setPath)
         self.binder.bind(object.properties.result_pairwise, self.cards.pairwise.setPath)

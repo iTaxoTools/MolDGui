@@ -95,8 +95,8 @@ class MoldModel(Task):
     taxon_rank = Property(TaxonRank, TaxonRank.Species)
     gaps_as_characters = Property(GapsAsCharacters, GapsAsCharacters.Yes)
 
-    advanced_mdnc = Property(AdvancedDNCModel, Instance)
-    advanced_rdns = Property(AdvancedRDNSModel, Instance)
+    mdnc = Property(AdvancedDNCModel, Instance)
+    rdns = Property(AdvancedRDNSModel, Instance)
 
     result_diagnosis = Property(Path, None)
     result_pairwise = Property(Path, None)
@@ -120,7 +120,7 @@ class MoldModel(Task):
             lambda path: None if path is None else path.parent / f'{path.stem}.pairwise.out')
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_directory,
             lambda path: None if path is None else path.parent)
-        self.binder.bind(self.properties.taxon_rank, self.advanced_rdns.properties.p_diff,
+        self.binder.bind(self.properties.taxon_rank, self.rdns.properties.p_diff,
             lambda x: 1 if x.code == 1 else 5)
 
     def logLine(self, text):
@@ -201,15 +201,15 @@ class MoldModel(Task):
             taxalist = ','.join(qTaxa),
             taxonrank = self.taxon_rank.code,
             gapsaschars = self.gaps_as_characters.code,
-            cutoff = self.advanced_mdnc.cutoff,
-            numnucl = self.advanced_mdnc.nucleotides,
-            numiter = self.advanced_mdnc.iterations,
-            maxlenraw = self.advanced_mdnc.max_length_raw,
-            maxlenrefined = self.advanced_mdnc.max_length_refined,
-            iref = self.advanced_mdnc.indexing_reference,
-            pdiff = self.advanced_rdns.p_diff,
-            nmax = self.advanced_rdns.n_max,
-            thresh = self.advanced_rdns.scoring.value,
+            cutoff = self.mdnc.cutoff,
+            numnucl = self.mdnc.nucleotides,
+            numiter = self.mdnc.iterations,
+            maxlenraw = self.mdnc.max_length_raw,
+            maxlenrefined = self.mdnc.max_length_refined,
+            iref = self.mdnc.indexing_reference,
+            pdiff = self.rdns.p_diff,
+            nmax = self.rdns.n_max,
+            thresh = self.rdns.scoring.value,
         )
 
     def stop(self):
@@ -239,9 +239,9 @@ class MoldModel(Task):
             'GAPS_AS_CHARS': self.properties.gaps_as_characters.set,
         }
         for property in AdvancedMDNCProperties:
-            reference[property.config] = self.advanced_mdnc.properties[property.key].set
+            reference[property.config] = self.mdnc.properties[property.key].set
         for property in AdvancedRDNSProperties:
-            reference[property.config] = self.advanced_rdns.properties[property.key].set
+            reference[property.config] = self.rdns.properties[property.key].set
         try:
             params = parse_configuration_file(path)
             for k, v in params.items():

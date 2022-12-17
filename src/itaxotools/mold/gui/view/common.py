@@ -152,7 +152,6 @@ class NoWheelComboBox(QtWidgets.QComboBox):
 
 
 class GLineEdit(QtWidgets.QLineEdit):
-
     textEditedSafe = QtCore.Signal(str)
 
     def __init__(self, *args, **kwargs):
