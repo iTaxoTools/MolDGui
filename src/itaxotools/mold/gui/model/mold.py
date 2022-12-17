@@ -222,6 +222,7 @@ class MoldModel(Task):
         self.dirty_data = True
 
     def open_configuration_path(self, path):
+        self.clear()
         reference = {
             'QTAXA': self.digest_qTaxa,
             'INPUT_FILE': self.properties.sequence_path.set,
@@ -241,6 +242,7 @@ class MoldModel(Task):
             self.notification.emit(Notification.Fail(str(exception)))
 
     def open_sequence_path(self, path):
+        self.clear()
         try:
             check_sequence_file(path)
             self.sequence_path = path
