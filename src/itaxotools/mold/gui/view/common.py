@@ -389,8 +389,12 @@ class CategoryButton(QtWidgets.QAbstractButton):
         self.setText(text)
         self.hovered = False
         self.triangle_pixels = 38
+        self.grayed = False
 
         self.toggled.connect(self.handleChecked)
+
+    def setGray(self, gray):
+        self.grayed = gray
 
     def enterEvent(self, event):
         self.hovered = True
@@ -413,7 +417,12 @@ class CategoryButton(QtWidgets.QAbstractButton):
 
         palette = QtGui.QGuiApplication.palette()
         weak = palette.color(QtGui.QPalette.Mid)
+        mild = palette.color(QtGui.QPalette.Dark)
         bold = palette.color(QtGui.QPalette.Shadow)
+
+        color = weak if self.grayed else bold
+        if self.grayed:
+            painter.setPen(QtGui.QPen(mild, 1, QtCore.Qt.SolidLine))
 
         up_triangle = QtGui.QPolygon([
             QtCore.QPoint(-6, 3),
@@ -437,7 +446,7 @@ class CategoryButton(QtWidgets.QAbstractButton):
         if self.hovered:
             painter.save()
             painter.translate(0, -1)
-            painter.setPen(QtGui.QPen(bold, 1, QtCore.Qt.SolidLine))
+            painter.setPen(QtGui.QPen(color, 1, QtCore.Qt.SolidLine))
             painter.drawLine(rect.bottomLeft(), rect.bottomRight())
             painter.restore()
 
@@ -445,7 +454,7 @@ class CategoryButton(QtWidgets.QAbstractButton):
         painter.translate(self._fontSize().width(), self._fontSize().height() / 2)
         painter.translate(self.triangle_pixels / 2, 1)
         painter.setPen(QtCore.Qt.NoPen)
-        painter.setBrush(QtGui.QBrush(bold))
+        painter.setBrush(QtGui.QBrush(color))
         painter.drawPolygon(triangle)
         painter.restore()
 

@@ -679,6 +679,7 @@ class MoldView(TaskView):
             self.cards.rdns,
         ]:
             self.binder.bind(object.properties.editable, card.setContentsEnabled)
+            self.binder.bind(object.properties.editable, card.controls.title.setGray, lambda x: not x)
 
         self.binder.bind(object.properties.busy, self.cards.progress.setBusy)
         self.binder.bind(object.properties.editable, self.cards.progress.setVisible, lambda editable: not editable)
