@@ -164,27 +164,16 @@ class Worker(QtCore.QThread):
         self.ready.release()
 
     def setStream(self, stream):
-        """Internal. Send process output to given file-like stream"""
+        """Send process output to given file-like stream"""
         self.stream = stream
 
-        if stream is not None:
-            self.handleOut = self._streamOut
-            self.handleErr = self._streamOut
-        else:
-            self.handleOut = self._streamNone
-            self.handleErr = self._streamNone
-
     def handleOut(self, data):
-        pass
+        if self.stream is not None:
+            self.stream.write(data)
 
     def handleErr(self, data):
-        pass
-
-    def _streamNone(self, data):
-        pass
-
-    def _streamOut(self, data):
-        self.stream.write(data)
+        if self.stream is not None:
+            self.stream.write(data)
 
     def exec(self, id, function, *args, **kwargs):
         """Execute given function on a child process"""
