@@ -96,7 +96,7 @@ scheme[QPalette.Disabled] = {
     QPalette.WindowText: 'iron',
     QPalette.Base: 'white',
     QPalette.AlternateBase: 'light',
-    QPalette.PlaceholderText: 'green',
+    QPalette.PlaceholderText: 'gray',
     QPalette.Text: 'iron',
     QPalette.Button: 'light',
     QPalette.ButtonText: 'gray',
