@@ -40,13 +40,14 @@ class PairwiseSelectMode(Enum):
 
 
 class TaxonRank(str, Enum):
-    Species = '1', 'Species:', 'up to 1% divergence from original'
-    Supraspecific = '2', 'Supraspecific taxa:', 'up to 5% divergence from original'
+    Species = '1', 1, 'Species:', 'up to 1% divergence from original'
+    Supraspecific = '2', 5, 'Supraspecific taxa:', 'up to 5% divergence from original'
 
-    def __new__(cls, code, label, description):
+    def __new__(cls, code, p_diff, label, description):
         obj = str.__new__(cls, code)
         obj._value_ = code
         obj.code = code
+        obj.p_diff = p_diff
         obj.label = label
         obj.description = description
         return obj

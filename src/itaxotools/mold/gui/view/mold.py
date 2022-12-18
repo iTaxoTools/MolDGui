@@ -537,13 +537,19 @@ class ScoringCombobox(NoWheelComboBox):
         self.setCurrentIndex(index)
 
 
+class PdiffEdit(GLineEdit):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setPlaceholderText('From taxon rank')
+
+
 class RDNSSelector(ExpandableEnumCard):
     title = 'Parameters of artificial datasets (only rDNSs)'
     enum = AdvancedRDNSProperties
-    widget_types = defaultdict(lambda: GLineEdit, {enum.Scoring: ScoringCombobox})
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    widget_types = defaultdict(lambda: GLineEdit, {
+        enum.Pdiff: PdiffEdit,
+        enum.Scoring: ScoringCombobox,
+    })
 
 
 class ResultViewer(Card):

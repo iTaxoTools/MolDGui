@@ -120,8 +120,6 @@ class MoldModel(Task):
             lambda path: None if path is None else path.parent / f'{path.stem}.pairwise.html')
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_directory,
             lambda path: None if path is None else path.parent)
-        self.binder.bind(self.properties.taxon_rank, self.rdns.properties.p_diff,
-            lambda x: 1 if x.code == 1 else 5)
 
     def logLine(self, text):
         self.lineLogged.emit(text)
@@ -200,7 +198,7 @@ class MoldModel(Task):
             maxlenraw = self.mdnc.max_length_raw,
             maxlenrefined = self.mdnc.max_length_refined,
             iref = self.mdnc.indexing_reference,
-            pdiff = self.rdns.p_diff,
+            pdiff = self.rdns.p_diff or self.taxon_rank.p_diff,
             nmax = self.rdns.n_max,
             thresh = self.rdns.scoring.value,
         )
