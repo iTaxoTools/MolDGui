@@ -23,6 +23,7 @@ setup(
     classifiers=[  # Optional
         "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3 :: Only",
@@ -33,12 +34,12 @@ setup(
         include=("itaxotools*",),
         where="src",
     ),
-    python_requires=">=3.9, <4",
+    python_requires=">=3.8.6, <4",
     install_requires=[
     ],
     extras_require={
         "gui": [
-            "PySide6>=6.4",
+            "PySide6>=6.1.3",
             "itaxotools-common==0.2.dev4",
         ],
         "dev": [

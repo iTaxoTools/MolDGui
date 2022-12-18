@@ -17,7 +17,7 @@
 # -----------------------------------------------------------------------------
 
 from enum import Enum, auto
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 from pathlib import Path
 
 
@@ -106,5 +106,5 @@ class AdvancedRDNSProperties(PropertyEnum):
 
 
 class MoldResults(NamedTuple):
-    diagnosis: Path | None
-    pairwise: Path | None
+    diagnosis: Optional[Path]
+    pairwise: Optional[Path]
