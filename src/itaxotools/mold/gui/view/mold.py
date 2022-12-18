@@ -142,9 +142,14 @@ class ProgressCard(Card):
 
     def __init__(self, parent):
         super().__init__(parent)
+        self._success = False
+        self._busy = False
 
         check = QtWidgets.QLabel('\u2714')
         check.setStyleSheet("""font-size: 16px; color: Palette(Shadow);""")
+
+        cross = QtWidgets.QLabel('\u2718')
+        cross.setStyleSheet("""font-size: 16px; color: Palette(Shadow);""")
 
         spin = SpinningCircle()
         spin.radius = 7
@@ -164,6 +169,7 @@ class ProgressCard(Card):
         head.setSpacing(12)
         head.addWidget(spin)
         head.addWidget(check)
+        head.addWidget(cross)
         head.addWidget(wait, 1)
         head.addWidget(done, 1)
         head.addWidget(details)
@@ -187,6 +193,7 @@ class ProgressCard(Card):
         details.toggled.connect(logger.setVisible)
 
         self.controls.check = check
+        self.controls.cross = cross
         self.controls.spin = spin
         self.controls.wait = wait
         self.controls.done = done
@@ -195,12 +202,21 @@ class ProgressCard(Card):
         self.controls.logger = logger
 
     def setBusy(self, busy):
-        self.controls.check.setVisible(not busy)
+        self._busy = busy
         self.controls.done.setVisible(not busy)
         self.controls.spin.setVisible(busy)
         self.controls.wait.setVisible(busy)
         self.controls.details.setChecked(busy)
         # self.controls.bar.setVisible(busy)
+        self.updateBadge()
+
+    def setSuccess(self, success):
+        self._success = success
+        self.updateBadge()
+
+    def updateBadge(self):
+        self.controls.check.setVisible(not self._busy and self._success)
+        self.controls.cross.setVisible(not self._busy and not self._success)
 
 
 class InputSelector(Card):
@@ -682,9 +698,11 @@ class MoldView(TaskView):
             self.binder.bind(object.properties.editable, card.controls.title.setGray, lambda x: not x)
 
         self.binder.bind(object.properties.busy, self.cards.progress.setBusy)
-        self.binder.bind(object.properties.editable, self.cards.progress.setVisible, lambda editable: not editable)
+        self.binder.bind(object.properties.has_logs, self.cards.progress.setVisible)
+        self.binder.bind(object.properties.done, self.cards.progress.setSuccess)
+
         self.binder.bind(object.lineLogged, self.cards.progress.controls.logger.append)
-        self.binder.bind(object.started, self.handleStarted)
+        self.binder.bind(object.clearLogs, self.handleClearLogs)
         self.binder.bind(object.notification, self.showNotification)
         # self.bind(object.progression, self.cards.progress.showProgress)
 
@@ -756,7 +774,7 @@ class MoldView(TaskView):
         title = f'{app.title} - {filename}' if filename else app.title
         self.window().setWindowTitle(title)
 
-    def handleStarted(self):
+    def handleClearLogs(self):
         self.cards.progress.controls.logger.clear()
         self.parent().parent().verticalScrollBar().setValue(0)
 

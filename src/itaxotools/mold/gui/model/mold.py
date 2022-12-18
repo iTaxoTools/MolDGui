@@ -79,6 +79,7 @@ class MoldModel(Task):
     task_name = 'MolD'
 
     lineLogged = QtCore.Signal(str)
+    clearLogs = QtCore.Signal()
     started = QtCore.Signal()
 
     configuration_path = Property(Path, None)
@@ -103,6 +104,7 @@ class MoldModel(Task):
     suggested_pairwise = Property(Path, None)
     suggested_directory = Property(Path, None)
     dirty_data = Property(bool, False)
+    has_logs = Property(bool, False)
 
     def __init__(self, name=None):
         super().__init__(name)
@@ -150,10 +152,11 @@ class MoldModel(Task):
         return True
 
     def start(self):
+        self.clearLogs.emit()
         self.busy = True
         self.busy_main = True
         self.dirty_data = True
-        self.started.emit()
+        self.has_logs = True
 
         confdir = self.configuration_path.parent if self.configuration_path else None
         timestamp = datetime.now().strftime("%Y%m%dT%H%M%S")
@@ -205,14 +208,17 @@ class MoldModel(Task):
     def stop(self):
         if self.worker is None:
             return
+        self.textLogIO.write('\n\nCancelled process by user request.\n')
         self.worker.reset()
         self.dirty_data = False
         self.busy = False
 
     def clear(self):
+        self.clearLogs.emit()
         self.result_diagnosis = None
         self.result_pairwise = None
         self.dirty_data = False
+        self.has_logs = False
         self.done = False
 
     def onDone(self, report):
@@ -220,6 +226,14 @@ class MoldModel(Task):
         self.result_diagnosis = report.result.diagnosis
         self.result_pairwise = report.result.pairwise
         self.dirty_data = True
+
+    def onFail(self, report):
+        super().onDone(report)
+        self.textLogIO.write(report.traceback)
+
+    def onError(self, report):
+        super().onDone(report)
+        self.textLogIO.write(f'Process failed with exit code: {report.exit_code}')
 
     def open_configuration_path(self, path):
         self.clear()
