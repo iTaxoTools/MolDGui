@@ -28,7 +28,7 @@ from .. import app
 from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, ScoringThreshold, GapsAsCharacters, AdvancedMDNCProperties, AdvancedRDNSProperties
 from ..files import is_fasta
 from ..utility import type_convert
-from .common import Card, TaskView, GLineEdit, GTextEdit, NoWheelComboBox, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle, CategoryButton
+from .common import Card, TaskView, GLineEdit, GTextEdit, NoWheelComboBox, NoWheelRadioButton, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle, CategoryButton
 
 
 class GrowingTextEdit(GTextEdit):
@@ -291,7 +291,7 @@ class ModeSelector(Card):
         radios.setContentsMargins(0, 0, 0, 0)
         radios.setSpacing(16)
         for mode in self.modes:
-            button = QtWidgets.QRadioButton(str(mode))
+            button = NoWheelRadioButton(str(mode))
             radios.addWidget(button)
             group.add(button, mode)
 

@@ -264,7 +264,17 @@ class RadioButtonGroup(QtCore.QObject):
         for widget, value in self.members.items():
             widget.setChecked(value == newValue)
 
-class RichRadioButton(QtWidgets.QRadioButton):
+
+class NoWheelRadioButton(QtWidgets.QRadioButton):
+    # Fix scrolling when hovering disabled button
+    def event(self, event):
+        if isinstance(event, QtGui.QWheelEvent):
+            event.ignore()
+            return False
+        return super().event(event)
+
+
+class RichRadioButton(NoWheelRadioButton):
     def __init__(self, text, desc, parent=None):
         super().__init__(text, parent)
         self.desc = desc
@@ -277,13 +287,6 @@ class RichRadioButton(QtWidgets.QRadioButton):
         font.setBold(False)
         font.setLetterSpacing(QtGui.QFont.PercentageSpacing, 0)
         self.small_font = font
-
-    def event(self, event):
-        if isinstance(event, QtGui.QWheelEvent):
-            # Fix scrolling when hovering disabled button
-            event.ignore()
-            return False
-        return super().event(event)
 
     def paintEvent(self, event):
         super().paintEvent(event)
