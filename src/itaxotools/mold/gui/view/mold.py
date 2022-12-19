@@ -58,25 +58,41 @@ class TextEditLogger(QtWidgets.QPlainTextEdit):
         super().__init__(*args, **kwargs)
         self.setReadOnly(True)
         self.scrollbarOldValue = 0
+        self.scrollbarAtBottom = True
+        self.scrollbarAtTop = True
+        self.scrollbarLock = True
+        self.scrollbarLockTimer = QtCore.QTimer()
+        self.scrollbarLockTimer.timeout.connect(self.scrollbarUnlock)
+        self.scrollbarLockTimer.setSingleShot(True)
         self.verticalScrollBar().valueChanged.connect(self.checkScrollbar)
 
-    # def wheelEvent(self, event):
-    #     event.ignore()
+    def wheelEvent(self, event):
+        super().wheelEvent(event)
+        if self.scrollbarAtBottom or self.scrollbarAtTop:
+            if not self.scrollbarLockTimer.isActive():
+                self.scrollbarLockTimer.start(300)
+            if self.scrollbarLock:
+                # Consume event, so parent doesn't scroll
+                event.accept()
+        else:
+            self.scrollbarLock = True
+
+    def scrollbarUnlock(self):
+        self.scrollbarLock = False
 
     def append(self, text):
-        scrollbar = self.verticalScrollBar()
-        at_bottom = scrollbar.value() == scrollbar.maximum()
-
         self.moveCursor(QtGui.QTextCursor.End)
         self.insertPlainText(text)
         self.moveCursor(QtGui.QTextCursor.End)
 
-        if not at_bottom:
-            scrollbar.setValue(self.scrollbarOldValue)
+        if not self.scrollbarAtBottom:
+            self.verticalScrollBar().setValue(self.scrollbarOldValue)
 
     def checkScrollbar(self, value):
         scrollbar = self.verticalScrollBar()
         self.scrollbarOldValue = value
+        self.scrollbarAtBottom = scrollbar.value() == scrollbar.maximum()
+        self.scrollbarAtTop = scrollbar.value() == 0
 
 
 class TitleCard(Card):
