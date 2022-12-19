@@ -433,48 +433,43 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
     withplus = []
     P2 = []
     shift = True
-    if ParDict['qTAXA'][0] == '>':#THIS OPTION DIAGNOSES ALL TAXA WITH MORE THAN USER-DEFINED NUMBER OF SEQUENCES AVAILABLE
-        NumSeq = int(ParDict['qTAXA'][1:])
-        Taxarecords = [i[1] for i in raw_records]
-        qCLADEs = []
-        for j in set(Taxarecords):
-            if Taxarecords.count(j) >= NumSeq:
-                qCLADEs.append(j)
-    elif ParDict['qTAXA'].startswith('P:'):#THIS OPTION DIAGNOSES ALL TAXA CONTAINING A USER-DEFINED PATTERN IN THE NAME
-        pattern = ParDict['qTAXA'].split(':')[1]
-        Taxarecords = [i[1] for i in raw_records]
-        qCLADEs = []
-        for j in set(Taxarecords):
-            if pattern in j:
-                qCLADEs.append(j)
-    elif ParDict['qTAXA'].startswith('P+:'):#THIS OPTION POOLS ALL TAXA CONTAINING A USER-DEFINED PATTERN IN THE NAME IN ONE TAXON AND DIAGNOSES IT
-        pattern = ParDict['qTAXA'].split(':')[1]
-        Taxarecords = set([i[1] for i in raw_records if pattern in i[1]])
-        spp = '+'.join(sorted(list(Taxarecords)))
-        qCLADEs = [spp]
-        nrecords = []
-        for rec in raw_records:
-            if rec[1] in Taxarecords:
-                nrecords.append([rec[0], spp, rec[2]])
-            else:
-                nrecords.append(rec)
-        raw_records = nrecords
-    else:#THIS OPTION DIAGNOSES ALL TAXA FROM A USER-DEFINED LIST; TAXA MAY BE COMBINED BY USING '+'
-        qCLADEs = []
-        allrecs = ParDict['qTAXA'].split(',')
-        for item in allrecs:
-            if item in ['ALL', 'All', 'all']:#THIS OPTION DIAGNOSES ALL TAXA IN THE DATASET
-                qCLADEs = list(set([i[1] for i in raw_records]))
-            elif item in [i[1] for i in raw_records]:
-                qCLADEs.append(item)
+    Taxarecords = [i[1] for i in raw_records]
+    qCLADEset = set()
+
+    for item in ParDict['qTAXA'].split(','):
+        item = item.strip()
+        if item.upper() == 'ALL':#THIS OPTION DIAGNOSES ALL TAXA IN THE DATASET
+            qCLADEset.update(Taxarecords)
+        elif item.startswith('>'):#THIS OPTION DIAGNOSES ALL TAXA WITH MORE THAN USER-DEFINED NUMBER OF SEQUENCES AVAILABLE
+            NumSeq = int(item[len('>'):].strip())
+            for j in Taxarecords:
+                if Taxarecords.count(j) > NumSeq:
+                    qCLADEset.add(j)
+        elif item.startswith('P:'):#THIS OPTION DIAGNOSES ALL TAXA CONTAINING A USER-DEFINED PATTERN IN THE NAME
+            pattern = item[len('P:'):].strip()
+            for j in Taxarecords:
+                if pattern in j:
+                    qCLADEset.add(j)
+        elif item.startswith('P+:'):#THIS OPTION DIAGNOSES ALL TAXA CONTAINING A USER-DEFINED PATTERN IN THE NAME
+            pattern = item[len('P+:'):].strip()
+            records = set(j for j in Taxarecords if pattern in j)
+            items = '+'.join(sorted(records))
+            withplus.append(items)
+        else:#THIS OPTION DIAGNOSES ALL TAXA FROM A USER-DEFINED LIST; TAXA MAY BE COMBINED BY USING '+'
+            if item in Taxarecords:
+                qCLADEset.add(item)
             elif '+' in item:
                 withplus.append(item)
             elif 'VS' in item:
-                P2.append(item.split('VS'))
+                items = item.split('VS')
+                P2.append([item.strip() for item in items])
             else:
                 print('UNRECOGNIZED TAXON', item)
-    #OCT2022 - end
+
+    qCLADEs = list(qCLADEset)
+
     print('query taxa:', len(qCLADEs+withplus), '-', str(sorted(qCLADEs)+sorted(withplus)).replace('[','').replace(']','').replace("'", ''))#1.3
+    print('pairwise taxa:', len(P2), '-', ', '.join('VS'.join(items) for items in P2))
 
     if 'Cutoff' in list(ParDict.keys()):#CUTOFF Number of the informative positions to be considered, default 100
         Cutoff = ParDict['Cutoff']#VERYNEW

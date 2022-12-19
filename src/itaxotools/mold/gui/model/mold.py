@@ -52,7 +52,7 @@ def main_wrapper(workdir: Path, confdir: Path, input_path: Path, **kwargs):
     if confdir and not input_path.exists() and not input_path.is_absolute():
         input_path = confdir / input_path
 
-    print('  GUI PARAMETERS  '.center(58, '#'))
+    print('  PARAMETERS FROM GUI  '.center(58, '#'))
     print('')
     print('tmpfname', '=', input_path)
     print('outfname', '=', output_path)
