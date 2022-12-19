@@ -226,11 +226,11 @@ class MoldModel(Task):
         self.dirty_data = True
 
     def onFail(self, report):
-        super().onDone(report)
+        super().onFail(report)
         self.textLogIO.write(report.traceback)
 
     def onError(self, report):
-        super().onDone(report)
+        super().onError(report)
         self.textLogIO.write(f'Process failed with exit code: {report.exit_code}')
 
     def open_configuration_path(self, path):
