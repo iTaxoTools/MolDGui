@@ -25,7 +25,7 @@ from itaxotools.common.utility import AttrDict, override
 from itaxotools.common.widgets import VLineSeparator
 
 from .. import app
-from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, ScoringThreshold, GapsAsCharacters, AdvancedMDNCProperties, AdvancedRDNSProperties
+from ..types import TaxonSelectMode, PairwiseSelectMode, TaxonRank, ScoringThreshold, GapsAsCharacters, AdvancedMDNCProperties, AdvancedRDNSProperties, ConfigurationMode
 from ..files import is_fasta
 from ..utility import type_convert
 from .common import Card, TaskView, GLineEdit, GTextEdit, NoWheelComboBox, NoWheelRadioButton, LongLabel, RadioButtonGroup, RichRadioButton, SpinningCircle, CategoryButton
@@ -235,19 +235,119 @@ class ProgressCard(Card):
         self.controls.cross.setVisible(not self._busy and not self._success)
 
 
-class InputSelector(Card):
+class ConfigSelector(Card):
     browse = QtCore.Signal()
 
-    def __init__(self, label_text, placeholder_text, parent=None):
-        super().__init__(parent)
+    modes = ConfigurationMode
+    mode_text = 'Set parameters'
+    label_text = 'Configuration File'
+    placeholder_text = 'Load all parameters from a configuration file'
+    warning_text = (
+        '<b>Warning:</b> loading a configuration file will overwrite all fields below. '
+        'It is then possible to modify the loaded parameters.'
+    )
 
-        label = QtWidgets.QLabel(label_text + ':')
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.draw_modes()
+        self.draw_selector()
+        self.controls.mode.setValue(self.modes.Fields)
+
+    def draw_modes(self):
+        label = QtWidgets.QLabel(self.mode_text + ':')
+        label.setStyleSheet("""font-size: 16px;""")
+        label.setFixedWidth(134)
+
+        group = RadioButtonGroup()
+        group.valueChanged.connect(self.handleToggle)
+        self.controls.mode = group
+
+        radios = QtWidgets.QHBoxLayout()
+        radios.setContentsMargins(0, 0, 0, 0)
+        radios.setSpacing(16)
+        for mode in self.modes:
+            button = NoWheelRadioButton(str(mode))
+            radios.addWidget(button)
+            group.add(button, mode)
+
+        layout = QtWidgets.QHBoxLayout()
+        layout.setSpacing(32)
+        layout.addWidget(label)
+        layout.addSpacing(8)
+        layout.addLayout(radios, 3)
+        layout.addStretch(1)
+        layout.addSpacing(32)
+        self.addLayout(layout)
+
+    def draw_selector(self):
+        label = QtWidgets.QLabel(self.label_text + ':')
         label.setStyleSheet("""font-size: 16px;""")
         label.setFixedWidth(134)
 
         filename = GLineEdit()
         filename.setReadOnly(True)
-        filename.setPlaceholderText(placeholder_text)
+        filename.setPlaceholderText(self.placeholder_text)
+        filename.setStyleSheet("""
+            QLineEdit {
+                background-color: palette(Base);
+                padding: 2px 4px 2px 4px;
+                border-radius: 4px;
+                border: 1px solid palette(Mid);
+                }
+            """)
+
+        browse = QtWidgets.QPushButton('Browse')
+        browse.clicked.connect(self.browse)
+
+        head = QtWidgets.QHBoxLayout()
+        head.setSpacing(16)
+        head.addWidget(label)
+        head.addSpacing(24)
+        head.addWidget(filename, 1)
+        head.addWidget(browse)
+
+        warning = LongLabel(self.warning_text)
+
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(16)
+        layout.addLayout(head)
+        layout.addWidget(warning)
+        widget = QtWidgets.QWidget()
+        widget.setLayout(layout)
+        self.addWidget(widget)
+
+        self.controls.selector = widget
+        self.controls.filename = filename
+        self.controls.browse = browse
+
+    def handleToggle(self, mode):
+        self.controls.selector.setVisible(mode.has_file)
+
+    def setPath(self, path):
+        if path is None:
+            self.controls.filename.setText('')
+            self.controls.mode.setValue(self.modes.Fields)
+        else:
+            self.controls.filename.setText(str(path))
+            self.controls.mode.setValue(self.modes.File)
+
+
+class SequenceSelector(Card):
+    browse = QtCore.Signal()
+    label_text = 'Sequence Data File'
+    placeholder_text = 'Select a Fasta file that includes taxon identifiers'
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        label = QtWidgets.QLabel(self.label_text + ':')
+        label.setStyleSheet("""font-size: 16px;""")
+        label.setFixedWidth(134)
+
+        filename = GLineEdit()
+        filename.setReadOnly(True)
+        filename.setPlaceholderText(self.placeholder_text)
         filename.setStyleSheet("""
             QLineEdit {
                 background-color: palette(Base);
@@ -276,24 +376,6 @@ class InputSelector(Card):
             self.controls.filename.setText('')
         else:
             self.controls.filename.setText(str(path))
-
-
-class ConfigSelector(InputSelector):
-    def __init__(self, parent=None):
-        super().__init__(
-            'Configuration File',
-            'Load options from a file',
-            parent
-        )
-
-
-class SequenceSelector(InputSelector):
-    def __init__(self, parent=None):
-        super().__init__(
-            'Sequence Data File',
-            'To begin, open a Fasta file that includes taxon identifiers',
-            parent
-        )
 
 
 class ModeSelector(Card):
@@ -369,7 +451,8 @@ class TaxonSelector(ModeSelector):
         'Please enter a list of taxa for diagnosis, separated by commas or new lines. '
         'You may merge many taxa together as one by using the "+" symbol. '
         'They will be used as the qTaxa parameter of the active configuration. '
-        'Also accepts any other patterns mentioned in the manual, such as "ALL" and ">N". '
+        'Also accepts any other patterns mentioned in the manual, such as '
+        '">N", "P:pattern", "P+:pattern" and "ALL".'
     )
     list_placeholder = (
         'ALL, >N, P:pattern, P+:pattern, Taxon1, Taxon2 + Taxon3, ...\n'
@@ -728,7 +811,7 @@ class MoldView(TaskView):
         self.binder.bind(object.notification, self.showNotification)
         # self.bind(object.progression, self.cards.progress.showProgress)
 
-        self.binder.bind(object.properties.configuration_path, self.cards.configuration.setVisible, lambda path: path is not None)
+        # self.binder.bind(object.properties.configuration_path, self.cards.configuration.setVisible, lambda path: path is not None)
         self.binder.bind(object.properties.configuration_path, self.cards.configuration.setPath)
         self.binder.bind(object.properties.sequence_path, self.cards.sequence.setPath)
         self.binder.bind(object.properties.configuration_path, self.updateWindowTitle)

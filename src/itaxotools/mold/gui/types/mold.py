@@ -21,6 +21,20 @@ from typing import NamedTuple, Optional
 from pathlib import Path
 
 
+class ConfigurationMode(str, Enum):
+    Fields = 'In the fields below', False
+    File = 'By loading a configuration file', True
+
+    def __new__(cls, label, has_file):
+        obj = str.__new__(cls, label)
+        obj._value_ = label
+        obj.has_file = has_file
+        return obj
+
+    def __str__(self):
+        return self.value
+
+
 class TaxonSelectMode(Enum):
     All = 'All taxa'
     List = 'From list'
