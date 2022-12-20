@@ -68,8 +68,8 @@ class TaxonRank(str, Enum):
 
 
 class GapsAsCharacters(str, Enum):
-    Yes = 'Yes', 'Yes:', 'gaps ("-") are transformed into "D" and treated as independent characters'
-    No = 'No', 'No:', 'gaps ("-") are treated as missing data ("N")'
+    Yes = 'yes', 'Yes:', 'gaps ("-") are transformed into "D" and treated as independent characters'
+    No = 'no', 'No:', 'gaps ("-") are treated as missing data ("N")'
 
     def __new__(cls, code, label, description):
         obj = str.__new__(cls, code)

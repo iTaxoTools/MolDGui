@@ -51,7 +51,7 @@ def parse_configuration_file(path):
         'QTAXA': lambda x: x,
         'INPUT_FILE': lambda x: Path(x),
         'TAXON_RANK': lambda x: TaxonRank(x),
-        'GAPS_AS_CHARS': lambda x: GapsAsCharacters(x.capitalize()),
+        'GAPS_AS_CHARS': lambda x: GapsAsCharacters(x.lower()),
         'CUTOFF': lambda x: x if x != '' else None,
         'NUMBERN': lambda x: int(x) if x != '' else None,
         'NUMBER_OF_ITERATIONS': lambda x: int(x) if x != '' else None,

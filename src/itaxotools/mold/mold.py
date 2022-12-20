@@ -346,7 +346,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
     print(ParDict)
     ############################################# #VERYNEW HOW GAPS ARE TREATED
     #REQUIRES A NEW FIELD IN THE GUI
-    if ParDict['Gaps_as_chars'] == 'yes':
+    if ParDict['Gaps_as_chars'].lower() == 'yes':
         gaps2D = True#VERYNEW
     else:#VERYNEW
         gaps2D = False#VERYNEW
