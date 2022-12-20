@@ -311,8 +311,8 @@ class ConfigSelector(Card):
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(16)
-        layout.addLayout(head)
         layout.addWidget(warning)
+        layout.addLayout(head)
         widget = QtWidgets.QWidget()
         widget.setLayout(layout)
         self.addWidget(widget)
@@ -426,6 +426,7 @@ class ModeSelector(Card):
 
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(12)
         layout.addWidget(label)
         layout.addWidget(list, 1)
 

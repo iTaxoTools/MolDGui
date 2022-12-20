@@ -59,6 +59,8 @@ class Body(QtWidgets.QStackedWidget):
         self.binder.unbind_all()
 
         self.binder.bind(self.actions.open.triggered, view.open)
+        self.binder.bind(self.actions.open_sequences.triggered, view.openSequence)
+        self.binder.bind(self.actions.open_configuration.triggered, view.openConfiguration)
         self.binder.bind(self.actions.save.triggered, view.save)
         self.binder.bind(self.actions.start.triggered, view.start)
         self.binder.bind(self.actions.stop.triggered, view.stop)

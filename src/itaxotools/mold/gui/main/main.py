@@ -73,6 +73,9 @@ class Main(ToolDialog):
         action.setStatusTip('Open an existing file')
         self.actions.open = action
 
+        self.actions.open_sequences = QtGui.QAction('Sequence Data File', self)
+        self.actions.open_configuration = QtGui.QAction('Configuration File', self)
+
         action = QtGui.QAction('&Save all', self)
         action.setIcon(app.resources.icons.save)
         action.setShortcut(QtGui.QKeySequence.Save)
@@ -106,8 +109,25 @@ class Main(ToolDialog):
         self.widgets.body = Body(self)
         self.widgets.footer = Footer(self)
 
-        for action in self.actions:
-            self.widgets.header.toolBar.addAction(action)
+        openButton = QtWidgets.QToolButton(self)
+        openButton.setPopupMode(QtWidgets.QToolButton.InstantPopup)
+        openButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
+        openMenu = QtWidgets.QMenu(openButton)
+        openMenu.setStyleSheet("""
+            QMenu::item { padding: 6px 24px 6px 16px;}
+            QMenu::item:selected  { background: Palette(Highlight); color: Palette(Window)}
+        """)
+        openMenu.addAction(self.actions.open_sequences)
+        openMenu.addAction(self.actions.open_configuration)
+        openButton.setDefaultAction(self.actions.open)
+        openButton.setMenu(openMenu)
+
+        self.widgets.header.toolBar.addWidget(openButton)
+        self.widgets.header.toolBar.addAction(self.actions.save)
+        self.widgets.header.toolBar.addAction(self.actions.start)
+        self.widgets.header.toolBar.addAction(self.actions.stop)
+        self.widgets.header.toolBar.addAction(self.actions.clear)
+
 
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.widgets.header)
