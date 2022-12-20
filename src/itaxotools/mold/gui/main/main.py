@@ -114,8 +114,9 @@ class Main(ToolDialog):
         openButton.setToolButtonStyle(QtCore.Qt.ToolButtonTextBesideIcon)
         openMenu = QtWidgets.QMenu(openButton)
         openMenu.setStyleSheet("""
-            QMenu::item { padding: 6px 24px 6px 16px;}
-            QMenu::item:selected  { background: Palette(Highlight); color: Palette(Window)}
+            QMenu { border: 1px solid palette(Mid); }
+            QMenu::item { padding: 6px 24px 6px 16px; }
+            QMenu::item:selected  { background: Palette(Highlight); color: Palette(Window) }
         """)
         openMenu.addAction(self.actions.open_sequences)
         openMenu.addAction(self.actions.open_configuration)

@@ -24,7 +24,7 @@ from itaxotools.common.widgets import VectorIcon
 
 colors = {
     'white':  '#ffffff',
-    'light':  '#eff1ee',
+    'light':  '#f4f6f3',
     'beige':  '#e1e0de',
     'gray':   '#abaaa8',
     'iron':   '#8b8d8a',

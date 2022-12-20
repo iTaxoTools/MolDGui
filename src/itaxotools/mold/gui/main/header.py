@@ -78,6 +78,8 @@ class ToolBar(QtWidgets.QToolBar):
                 border-radius: 2px;
                 }
             QToolButton[popupMode="2"]:pressed {
+                padding: 0px 8px 1px 8px;
+                margin: 0px 0px -1px 0px;
                 border-bottom-right-radius: 0px;
                 border-bottom-left-radius: 0px;
                 }

@@ -115,7 +115,7 @@ class MoldModel(Task):
 
         self.binder = Binder()
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_diagnosis,
-            lambda path: None if path is None else path.parent / f'{path.stem}.html')
+            lambda path: None if path is None else path.parent / f'{path.stem}.molecular_diagnosis.html')
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_pairwise,
             lambda path: None if path is None else path.parent / f'{path.stem}.pairwise.html')
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_directory,

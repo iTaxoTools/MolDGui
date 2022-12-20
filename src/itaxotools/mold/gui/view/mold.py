@@ -585,10 +585,16 @@ class ExpandableCard(Card):
         self.controls.contents.setEnabled(enable)
 
 
+class EntryEdit(GLineEdit):
+    def __init__(self, entry):
+        super().__init__()
+        self.setPlaceholderText(str(entry.default))
+
+
 class ExpandableEnumCard(ExpandableCard):
     title = 'Expandable Enum Card'
     enum = []
-    widget_types = defaultdict(lambda: GLineEdit)
+    widget_types = defaultdict(lambda: EntryEdit)
 
     def draw_contents(self):
         layout = QtWidgets.QGridLayout()
@@ -599,7 +605,7 @@ class ExpandableEnumCard(ExpandableCard):
         for row, entry in enumerate(self.enum):
             label = QtWidgets.QLabel(f'<b>{entry.label}:</b>')
             widget_type = self.widget_types[entry]
-            edit = widget_type()
+            edit = widget_type(entry)
             edit.setFixedWidth(100)
             description = QtWidgets.QLabel(f'{entry.description}.')
             layout.addWidget(label, row, 0)
@@ -622,7 +628,7 @@ class MDNCSelector(ExpandableEnumCard):
 class ScoringCombobox(NoWheelComboBox):
     valueChanged = QtCore.Signal(ScoringThreshold)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, entry, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for threshold in ScoringThreshold:
             self.addItem(threshold.label, threshold.value)
@@ -639,15 +645,15 @@ class ScoringCombobox(NoWheelComboBox):
 
 
 class PdiffEdit(GLineEdit):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, entry, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setPlaceholderText('From taxon rank')
 
 
 class RDNSSelector(ExpandableEnumCard):
-    title = 'Parameters of artificial datasets (only rDNSs)'
+    title = 'Parameters of artificial datasets (only rDNCs)'
     enum = AdvancedRDNSProperties
-    widget_types = defaultdict(lambda: GLineEdit, {
+    widget_types = defaultdict(lambda: EntryEdit, {
         enum.Pdiff: PdiffEdit,
         enum.Scoring: ScoringCombobox,
     })
