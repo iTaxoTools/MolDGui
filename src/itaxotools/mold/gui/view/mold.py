@@ -493,20 +493,21 @@ class TaxonRankSelector(Card):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        title = 'Taxon rank:'
-        desc = 'determines the maximum divergence that is allowed when simulating sequences.'
-        label = QtWidgets.QLabel(
-        f"""<html>
-        <span style="font-size:16px;">{title}&nbsp;</span>
-        <span style="font-size:12px;">{desc}</span>
-        </html>""")
+        title = QtWidgets.QLabel('Taxon rank:')
+        title.setStyleSheet("font-size:16px;")
+
+        label = LongLabel(
+            'Rank of the taxon designations in the sequence headers of the Fasta input file. '
+            'Determines the maximum divergence allowed when simulating sequences for rDNC selection. '
+        )
 
         group = RadioButtonGroup()
         group.valueChanged.connect(self.toggled)
         self.controls.rank = group
 
         layout = QtWidgets.QVBoxLayout()
-        layout.setSpacing(8)
+        layout.setSpacing(12)
+        layout.addWidget(title)
         layout.addWidget(label)
 
         for rank in TaxonRank:
@@ -526,7 +527,7 @@ class GapsAsCharactersSelector(Card):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        label = QtWidgets.QLabel("Code alignment gaps as characters")
+        label = QtWidgets.QLabel("Code alignment gaps as characters:")
         label.setStyleSheet("""font-size: 16px;""")
 
         group = RadioButtonGroup()

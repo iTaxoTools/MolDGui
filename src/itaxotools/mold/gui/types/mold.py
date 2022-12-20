@@ -54,8 +54,8 @@ class PairwiseSelectMode(Enum):
 
 
 class TaxonRank(str, Enum):
-    Species = '1', 1, 'Species:', 'up to 1% divergence from original'
-    Supraspecific = '2', 5, 'Supraspecific taxa:', 'up to 5% divergence from original'
+    Species = '1', 1, 'Species:', 'up to 1% divergence between simulated and original sequence'
+    Supraspecific = '2', 5, 'Supraspecific taxa:', 'up to 5% divergence between simulated and original sequence'
 
     def __new__(cls, code, p_diff, label, description):
         obj = str.__new__(cls, code)
@@ -115,7 +115,7 @@ class AdvancedMDNCProperties(PropertyEnum):
 
 
 class AdvancedRDNSProperties(PropertyEnum):
-    Pdiff = 'PDIFF', 'p_diff', None, 'Pdiff', 'percent difference between original and modified sequences',
+    Pdiff = 'PDIFF', 'p_diff', None, 'Pdiff', 'maximum percent difference between simulated and original sequence',
     NmaxSeq = 'NMAXSEQ', 'n_max', 5, 'NmaxSeq', 'maximum number of sequences per taxon to modify',
     Scoring = 'SCORING', 'scoring', ScoringThreshold.Moderate, 'Scoring', 'determines the scoring threshold out of 100 tests',
 
