@@ -54,7 +54,7 @@ class Main(ToolDialog):
         self.draw()
 
         self.state = MainState()
-        self.model = MoldModel('Molecular Diagnosis')
+        self.model = MoldModel('Molecular diagnosis')
         self.widgets.body.showModel(self.model)
 
         for path in (Path(file) for file in files):
@@ -73,8 +73,8 @@ class Main(ToolDialog):
         action.setStatusTip('Open an existing file')
         self.actions.open = action
 
-        self.actions.open_sequences = QtGui.QAction('Sequence Data File', self)
-        self.actions.open_configuration = QtGui.QAction('Configuration File', self)
+        self.actions.open_sequences = QtGui.QAction('Sequence data file', self)
+        self.actions.open_configuration = QtGui.QAction('Configuration file', self)
 
         action = QtGui.QAction('&Save all', self)
         action.setIcon(app.resources.icons.save)

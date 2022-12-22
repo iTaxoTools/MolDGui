@@ -70,5 +70,5 @@ icons = ResourceLoader(
 )
 
 docs = ResourceLoader(
-    manual = lambda: _get_local('docs/MolD_v1_3_manual.pdf'),
+    manual = lambda: _get_local('docs/MolD_v1_4_manual.pdf'),
 )

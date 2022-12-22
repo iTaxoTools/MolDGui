@@ -240,7 +240,7 @@ class ConfigSelector(Card):
 
     modes = ConfigurationMode
     mode_text = 'Set parameters'
-    label_text = 'Configuration File'
+    label_text = 'Configuration file'
     placeholder_text = 'Load all parameters from a configuration file'
     warning_text = (
         '<b>Warning:</b> loading a configuration file will overwrite all fields below. '
@@ -335,7 +335,7 @@ class ConfigSelector(Card):
 
 class SequenceSelector(Card):
     browse = QtCore.Signal()
-    label_text = 'Sequence Data File'
+    label_text = 'Sequence data file'
     placeholder_text = 'Select a Fasta file that includes taxon identifiers'
 
     def __init__(self, parent=None):
@@ -382,7 +382,7 @@ class ModeSelector(Card):
     toggled = QtCore.Signal(object)
 
     modes = []
-    mode_text = 'Mode Selection'
+    mode_text = 'Mode selection'
     list_text = 'List text.'
     list_placeholder = 'List placeholder...'
 
@@ -447,7 +447,7 @@ class ModeSelector(Card):
 
 class TaxonSelector(ModeSelector):
     modes = TaxonSelectMode
-    mode_text = 'Taxon Selection'
+    mode_text = 'Taxon selection'
     list_text = (
         'Please enter a list of taxa for diagnosis, separated by commas or new lines. '
         'You may merge many taxa together as one by using the "+" symbol. '
@@ -469,7 +469,7 @@ class TaxonSelector(ModeSelector):
 
 class PairwiseSelector(ModeSelector):
     modes = PairwiseSelectMode
-    mode_text = 'Pairwise Selection'
+    mode_text = 'Pairwise selection'
     list_text = (
         'Please enter a list of taxon combinations, separated by commas or new lines. '
         'Combinations are defined using two or more taxon names, joined by "VS". '
@@ -497,7 +497,7 @@ class TaxonRankSelector(Card):
         title.setStyleSheet("font-size:16px;")
 
         label = LongLabel(
-            'Rank of the taxon designations in the sequence headers of the Fasta input file. '
+            'Rank of the taxon designations in the sequence headers of the fasta input file. '
             'Determines the maximum divergence allowed when simulating sequences for rDNC selection. '
         )
 
@@ -651,7 +651,7 @@ class PdiffEdit(GLineEdit):
 
 
 class RDNSSelector(ExpandableEnumCard):
-    title = 'Parameters of artificial datasets (only rDNCs)'
+    title = 'Parameters for simulated datasets (only rDNCs)'
     enum = AdvancedRDNSProperties
     widget_types = defaultdict(lambda: EntryEdit, {
         enum.Pdiff: PdiffEdit,
@@ -749,12 +749,12 @@ class ResultDialog(QtWidgets.QDialog):
 
 class DiagnosisViewer(ResultViewer):
     def __init__(self, parent=None):
-        super().__init__('Molecular Diagnosis', parent)
+        super().__init__('Molecular diagnosis', parent)
 
 
 class PairwiseViewer(ResultViewer):
     def __init__(self, parent=None):
-        super().__init__('Pairwise Analysis', parent)
+        super().__init__('Pairwise analysis', parent)
 
 
 class MoldView(TaskView):
@@ -921,12 +921,12 @@ class MoldView(TaskView):
         self.window().msgShow(dialog)
 
     def saveDiagnosis(self):
-        path = self.getSavePath('Save Molecular Diagnosis', str(self.object.suggested_diagnosis))
+        path = self.getSavePath('Save molecular diagnosis', str(self.object.suggested_diagnosis))
         if path:
             self.object.save_diagnosis(path)
 
     def savePairwise(self):
-        path = self.getSavePath('Save Pairwise Analysis', str(self.object.suggested_pairwise))
+        path = self.getSavePath('Save pairwise analysis', str(self.object.suggested_pairwise))
         if path:
             self.object.save_pairwise(path)
 
