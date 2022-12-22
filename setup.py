@@ -36,12 +36,10 @@ setup(
     ),
     python_requires=">=3.8.6, <4",
     install_requires=[
+        "PySide6>=6.1.3",
+        "itaxotools-common==0.2.dev4",
     ],
     extras_require={
-        "gui": [
-            "PySide6>=6.1.3",
-            "itaxotools-common==0.2.dev4",
-        ],
         "dev": [
             "pyinstaller>=5.7",
         ],

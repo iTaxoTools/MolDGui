@@ -1,3 +1,25 @@
+# -----------------------------------------------------------------------------
+# MolD - a novel software to compile accurate and reliable DNA diagnoses for taxonomic descriptions
+# Copyright (C) Alexander Fedosov, Guillaume Achaz, Andrey Gontchar, Nicolas Puillandre
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# -----------------------------------------------------------------------------
+
+# This file was modified by Stefanos Patmanidis to better work with the Gui.
+# Refer to the original code here: https://github.com/SashaFedosov/MolD
+
+
 """
 This script compiles rDNC-based DNA diagnoses for a pre-defined taxa in a dataset. This is the MAIN WORKING VERSION v1.4
 This version already implements the new functionalities:
