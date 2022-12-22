@@ -48,9 +48,17 @@ class ReportFail(NamedTuple):
     traceback: str
 
 
-class ReportError(NamedTuple):
+class ReportExit(NamedTuple):
     id: Any
     exit_code: int
+
+
+class ReportReset(NamedTuple):
+    id: Any
+
+
+class ReportQuit:
+    pass
 
 
 class ReportProgress(NamedTuple):
@@ -60,7 +68,12 @@ class ReportProgress(NamedTuple):
     maximum: int = 0
 
 
-def loop(initializer, commands, results, progress, pipeIn, pipeOut, pipeErr):
+def progress_handler(*args, **kwargs):
+    report = ReportProgress(*args, **kwargs)
+    progress.send(report)
+
+
+def loop(commands, results, progress, pipeIn, pipeOut, pipeErr):
     """Wait for commands, send back results"""
 
     inp = PipeIO(pipeIn, 'r')
@@ -71,15 +84,7 @@ def loop(initializer, commands, results, progress, pipeIn, pipeOut, pipeErr):
     sys.stdout = out
     sys.stderr = err
 
-    def _progress_handler(*args, **kwargs):
-        report = ReportProgress(*args, **kwargs)
-        progress.send(report)
-
-    itaxotools.progress_handler = _progress_handler
-
-    if initializer:
-        initializer()
-    results.send(InitDone())
+    itaxotools.progress_handler = progress_handler
 
     while True:
         id, function, args, kwargs = commands.recv()

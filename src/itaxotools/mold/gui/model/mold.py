@@ -27,7 +27,7 @@ from shutil import copy
 from ..files import check_sequence_file, parse_configuration_file
 from ..utility import Property, Instance, Binder, PropertyObject, EnumObject
 from ..types import AdvancedMDNCProperties, AdvancedRDNSProperties, Notification, TaxonSelectMode, PairwiseSelectMode, TaxonRank, GapsAsCharacters, MoldResults
-from ..threading import TextEditLoggerIO
+from ..io import WriterIO
 from .common import Task
 
 
@@ -110,8 +110,13 @@ class MoldModel(Task):
         super().__init__(name)
         self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_')
         self.temporary_path = Path(self.temporary_directory.name)
-        self.textLogIO = TextEditLoggerIO(self.logLine)
-        self.worker.setStream(self.textLogIO)
+
+        self.textLogIO = WriterIO(self.logLine)
+        self.worker.streamOut.add(self.textLogIO)
+        self.worker.streamErr.add(self.textLogIO)
+
+        # self.worker.setLogPathAll(self.temporary_path / 'all.log')
+        # self.worker.setLogPathExec(self.temporary_path / '{}.log')
 
         self.binder = Binder()
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_diagnosis,
@@ -184,7 +189,7 @@ class MoldModel(Task):
                 property.value = property.default
 
         self.exec(
-            None,
+            timestamp,
             main_wrapper,
             workdir = work_dir,
             confdir = confdir,
