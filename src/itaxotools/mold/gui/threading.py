@@ -29,7 +29,7 @@ from itaxotools.common.utility import override
 
 from .io import StreamMultiplexer
 from .threading_loop import (
-    Command, InitDone, ReportProgress, ReportDone, ReportFail, ReportExit, ReportReset, ReportQuit, loop)
+    Command, InitDone, ReportProgress, ReportDone, ReportFail, ReportExit, ReportStop, ReportQuit, loop)
 
 
 class Worker(QtCore.QThread):
@@ -37,6 +37,7 @@ class Worker(QtCore.QThread):
     done = QtCore.Signal(ReportDone)
     fail = QtCore.Signal(ReportFail)
     error = QtCore.Signal(ReportExit)
+    stop = QtCore.Signal(ReportStop)
     progress = QtCore.Signal(ReportProgress)
 
     def __init__(self, name='Worker', eager=True, log_path=None):
@@ -138,7 +139,7 @@ class Worker(QtCore.QThread):
             self.process_start()
 
         if resetting:
-            return ReportReset(task.id)
+            return ReportStop(task.id)
 
         return ReportExit(task.id, exitcode)
 
@@ -162,6 +163,8 @@ class Worker(QtCore.QThread):
             self.done.emit(report)
         elif isinstance(report, ReportFail):
             self.fail.emit(report)
+        if isinstance(report, ReportStop):
+            self.stop.emit(report)
         elif isinstance(report, ReportExit):
             if report.id != 0:
                 self.error.emit(report)

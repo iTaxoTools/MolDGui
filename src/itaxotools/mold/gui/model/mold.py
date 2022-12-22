@@ -98,30 +98,17 @@ class MoldModel(Task):
 
     result_diagnosis = Property(Path, None)
     result_pairwise = Property(Path, None)
+    result_id = Property(str, None)
 
-    suggested_diagnosis = Property(Path, None)
-    suggested_pairwise = Property(Path, None)
-    suggested_directory = Property(Path, None)
     dirty_data = Property(bool, False)
     has_logs = Property(bool, False)
 
     def __init__(self, name=None):
         super().__init__(name)
 
-        self.textLogIO = WriterIO(self.logLine)
+        self.textLogIO = WriterIO(self.lineLogged.emit)
         self.worker.streamOut.add(self.textLogIO)
         self.worker.streamErr.add(self.textLogIO)
-
-        self.binder = Binder()
-        self.binder.bind(self.properties.sequence_path, self.properties.suggested_diagnosis,
-            lambda path: None if path is None else path.parent / f'{path.stem}.molecular_diagnosis.html')
-        self.binder.bind(self.properties.sequence_path, self.properties.suggested_pairwise,
-            lambda path: None if path is None else path.parent / f'{path.stem}.pairwise.html')
-        self.binder.bind(self.properties.sequence_path, self.properties.suggested_directory,
-            lambda path: None if path is None else path.parent)
-
-    def logLine(self, text):
-        self.lineLogged.emit(text)
 
     def readyTriggers(self):
         return [
@@ -212,6 +199,7 @@ class MoldModel(Task):
 
     def clear(self):
         self.clearLogs.emit()
+        self.result_id = None
         self.result_diagnosis = None
         self.result_pairwise = None
         self.dirty_data = False
@@ -220,17 +208,24 @@ class MoldModel(Task):
 
     def onDone(self, report):
         super().onDone(report)
+        self.result_id = report.id
         self.result_diagnosis = report.result.diagnosis
         self.result_pairwise = report.result.pairwise
         self.dirty_data = True
 
     def onFail(self, report):
         super().onFail(report)
+        self.result_id = report.id
         self.textLogIO.write(report.traceback)
 
     def onError(self, report):
         super().onError(report)
+        self.result_id = report.id
         self.textLogIO.write(f'Process failed with exit code: {report.exit_code}')
+
+    def onStop(self, report):
+        super().onStop(report)
+        self.result_id = report.id
 
     def open_configuration_path(self, path):
         self.clear()
@@ -278,13 +273,37 @@ class MoldModel(Task):
         self.pairs_mode = PairwiseSelectMode.List
         self.pairs_list = '\n'.join(pairs) + '\n'
 
+    @property
+    def suggested_diagnosis(self):
+        path = self.sequence_path
+        return path.parent / f'{path.stem}.molecular_diagnosis.html'
+
+    @property
+    def suggested_pairwise(self):
+        path = self.sequence_path
+        return path.parent / f'{path.stem}.pairwise.html'
+
+    @property
+    def suggested_log(self):
+        path = self.sequence_path
+        return path.parent / f'{path.stem}.{self.result_id}.log'
+
+    @property
+    def suggested_directory(self):
+        path = self.sequence_path
+        return path.parent
+
     def save_diagnosis(self, path):
         copy(self.result_diagnosis, path)
 
     def save_pairwise(self, path):
         copy(self.result_pairwise, path)
 
+    def save_log(self, path):
+        copy(self.temporary_path / f'{self.result_id}.log', path)
+
     def save_all(self, path):
         self.save_diagnosis(path / self.suggested_diagnosis.name)
         self.save_pairwise(path / self.suggested_pairwise.name)
+        self.save_log(path / self.suggested_log.name)
         self.dirty_data = False

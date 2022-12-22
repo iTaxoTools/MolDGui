@@ -53,7 +53,7 @@ class ReportExit(NamedTuple):
     exit_code: int
 
 
-class ReportReset(NamedTuple):
+class ReportStop(NamedTuple):
     id: Any
 
 

@@ -26,7 +26,7 @@ from pathlib import Path
 
 from itaxotools.common.utility import override
 
-from ..threading import ReportProgress, ReportDone, ReportFail, ReportExit, Worker
+from ..threading import ReportProgress, ReportDone, ReportFail, ReportExit, ReportStop, Worker
 from ..types import Notification, Type
 from ..utility import Property, PropertyObject, PropertyRef
 
@@ -76,6 +76,7 @@ class Task(Object):
         self.worker.done.connect(self.onDone)
         self.worker.fail.connect(self.onFail)
         self.worker.error.connect(self.onError)
+        self.worker.stop.connect(self.onStop)
         self.worker.progress.connect(self.onProgress)
 
         for property in self.readyTriggers():
@@ -110,6 +111,10 @@ class Task(Object):
         self.notification.emit(Notification.Fail(f'Process failed with exit code: {report.exit_code}'))
         self.busy = False
 
+    def onStop(self, report: ReportStop):
+        # self.notification.emit(Notification.Warn('Cancelled by user.'))
+        self.busy = False
+
     def onDone(self, report: ReportDone):
         """Overload this to handle results"""
         self.notification.emit(Notification.Info(f'{self.name} completed successfully!'))
@@ -127,8 +132,6 @@ class Task(Object):
         if self.worker is None:
             return
         self.worker.reset()
-        self.notification.emit(Notification.Warn('Cancelled by user.'))
-        self.busy = False
 
     def readyTriggers(self) -> List[PropertyRef]:
         """Overload this to set properties as ready triggers"""

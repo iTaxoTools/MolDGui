@@ -155,6 +155,7 @@ class TitleCard(Card):
 
 
 class ProgressCard(Card):
+    save = QtCore.Signal()
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -176,6 +177,9 @@ class ProgressCard(Card):
         done = QtWidgets.QLabel('Progress Logs')
         done.setStyleSheet("""font-size: 16px;""")
 
+        save = QtWidgets.QPushButton('Save')
+        save.clicked.connect(self.save)
+
         details = QtWidgets.QPushButton('Details')
         details.setCheckable(True)
         details.setChecked(True)
@@ -188,6 +192,8 @@ class ProgressCard(Card):
         head.addWidget(cross)
         head.addWidget(wait, 1)
         head.addWidget(done, 1)
+        head.addWidget(save)
+        head.addSpacing(4)
         head.addWidget(details)
 
         bar = QtWidgets.QProgressBar()
@@ -214,6 +220,7 @@ class ProgressCard(Card):
         self.controls.wait = wait
         self.controls.done = done
         self.controls.details = details
+        self.controls.save = save
         self.controls.bar = bar
         self.controls.logger = logger
 
@@ -223,6 +230,7 @@ class ProgressCard(Card):
         self.controls.spin.setVisible(busy)
         self.controls.wait.setVisible(busy)
         self.controls.details.setChecked(busy)
+        self.controls.save.setVisible(not busy)
         # self.controls.bar.setVisible(busy)
         self.updateBadge()
 
@@ -814,6 +822,7 @@ class MoldView(TaskView):
         self.binder.bind(object.properties.has_logs, self.cards.progress.setVisible)
         self.binder.bind(object.properties.done, self.cards.progress.setSuccess)
 
+        self.binder.bind(self.cards.progress.save, self.saveLog)
         self.binder.bind(object.lineLogged, self.cards.progress.controls.logger.append)
         self.binder.bind(object.clearLogs, self.handleClearLogs)
         self.binder.bind(object.notification, self.showNotification)
@@ -929,6 +938,11 @@ class MoldView(TaskView):
         path = self.getSavePath('Save pairwise analysis', str(self.object.suggested_pairwise))
         if path:
             self.object.save_pairwise(path)
+
+    def saveLog(self):
+        path = self.getSavePath('Save progress log', str(self.object.suggested_log))
+        if path:
+            self.object.save_log(path)
 
     def save(self):
         path = self.getExistingDirectory('Save All', str(self.object.suggested_directory))
