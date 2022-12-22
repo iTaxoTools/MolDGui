@@ -19,6 +19,7 @@
 from PySide6 import QtCore
 
 from collections import deque
+from contextlib import contextmanager
 from typing import Callable
 import multiprocessing as mp
 import sys
@@ -38,11 +39,12 @@ class Worker(QtCore.QThread):
     error = QtCore.Signal(ReportExit)
     progress = QtCore.Signal(ReportProgress)
 
-    def __init__(self, name='Worker', eager=True):
+    def __init__(self, name='Worker', eager=True, log_path=None):
         """Immediately starts thread execution"""
         super().__init__()
-        self.eager = eager
         self.name = name
+        self.eager = eager
+        self.log_path = log_path
 
         self.queue = mp.Queue()
         self.pipeIn = None
@@ -58,10 +60,6 @@ class Worker(QtCore.QThread):
         self.streamOut = StreamMultiplexer(sys.stdout)
         self.streamErr = StreamMultiplexer(sys.stderr)
 
-        self.logFileAll = None
-        self.logPathExec = None
-        self.logFileExec = None
-
         app = QtCore.QCoreApplication.instance()
         app.aboutToQuit.connect(self.quit)
 
@@ -73,20 +71,19 @@ class Worker(QtCore.QThread):
         Internal. This is executed on the new thread after start() is called.
         Once a child process is ready, enter an event loop.
         """
-        if self.eager:
-            self.process_start()
-        while not self.quitting:
-            task = self.queue.get()
-            if task is None:
-                break
-            if self.process is None:
+        with self.open_log('all.log'):
+            if self.eager:
                 self.process_start()
-            # make context manager?
-            # self.openLogFileExec(task.id)
-            self.commands.send(task)
-            report = self.loop(task)
-            self.handle_report(report)
-            # self.closeLogFileExec()
+            while not self.quitting:
+                task = self.queue.get()
+                if task is None:
+                    break
+                if self.process is None:
+                    self.process_start()
+                with self.open_log(f'{str(task.id)}.log'):
+                    self.commands.send(task)
+                    report = self.loop(task)
+                    self.handle_report(report)
 
     def loop(self, task: Command):
         """
@@ -169,32 +166,18 @@ class Worker(QtCore.QThread):
             if report.id != 0:
                 self.error.emit(report)
 
-    def setLogPathAll(self, path):
-        if self.logFileAll:
-            self.streamOut.remove(self.logFileAll)
-            self.streamErr.remove(self.logFileAll)
-            self.logFileAll.close()
-        self.logFileAll = open(path, 'a')
-        self.streamOut.add(self.logFileAll)
-        self.streamErr.add(self.logFileAll)
-
-    def setLogPathExec(self, path):
-        self.logPathExec = path
-
-    def openLogFileExec(self, id):
-        path = self.logPathExec
+    @contextmanager
+    def open_log(self, filename):
+        path = self.log_path
         if not path:
-            return None
-        path = path.parent / path.name.format(str(id))
-        self.logFileExec = open(path, 'a')
-        self.streamOut.add(self.logFileExec)
-        self.streamErr.add(self.logFileExec)
-
-    def closeLogFileExec(self):
-        if self.logFileExec:
-            self.streamOut.remove(self.logFileExec)
-            self.streamErr.remove(self.logFileExec)
-            self.logFileExec.close()
+            yield
+            return
+        with open(path / filename, 'a') as file:
+            self.streamOut.add(file)
+            self.streamErr.add(file)
+            yield
+            self.streamOut.remove(file)
+            self.streamErr.remove(file)
 
     def process_start(self):
         """Internal. Initialize process and pipes"""

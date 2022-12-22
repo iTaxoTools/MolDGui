@@ -21,6 +21,8 @@ from PySide6 import QtCore
 import itertools
 from collections import defaultdict
 from typing import Any, Callable, List
+from tempfile import TemporaryDirectory
+from pathlib import Path
 
 from itaxotools.common.utility import override
 
@@ -67,7 +69,10 @@ class Task(Object):
     def __init__(self, name=None):
         super().__init__(name or self._get_next_name())
 
-        self.worker = Worker(name=self.name, eager=True)
+        self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_')
+        self.temporary_path = Path(self.temporary_directory.name)
+
+        self.worker = Worker(name=self.name, eager=True, log_path=self.temporary_path)
         self.worker.done.connect(self.onDone)
         self.worker.fail.connect(self.onFail)
         self.worker.error.connect(self.onError)

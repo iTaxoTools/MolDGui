@@ -19,7 +19,6 @@
 from PySide6 import QtCore
 
 from datetime import datetime
-from tempfile import TemporaryDirectory
 from itertools import chain
 from pathlib import Path
 from shutil import copy
@@ -108,15 +107,10 @@ class MoldModel(Task):
 
     def __init__(self, name=None):
         super().__init__(name)
-        self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_')
-        self.temporary_path = Path(self.temporary_directory.name)
 
         self.textLogIO = WriterIO(self.logLine)
         self.worker.streamOut.add(self.textLogIO)
         self.worker.streamErr.add(self.textLogIO)
-
-        # self.worker.setLogPathAll(self.temporary_path / 'all.log')
-        # self.worker.setLogPathExec(self.temporary_path / '{}.log')
 
         self.binder = Binder()
         self.binder.bind(self.properties.sequence_path, self.properties.suggested_diagnosis,
