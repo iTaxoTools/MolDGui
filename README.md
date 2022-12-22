@@ -5,9 +5,9 @@ Identify diagnostic nucleotide combinations (DNCs) in DNA sequence alignments, w
 This is a Qt GUI for [Mold v1.4](https://github.com/SashaFedosov/MolD).
 
 
-## Windows executables
-Download and run the standalone executables without installing Python.<br>
-[See the latest release here.](https://github.com/iTaxoTools/MoldGui/releases/latest)
+## Windows executable
+Download and run the standalone executable without installing Python.<br>
+[See the latest release here.](https://github.com/iTaxoTools/MolDGui/releases/latest)
 
 
 ## Manual
@@ -18,8 +18,8 @@ You can read more about MolD and how to use it in the manual.<br>
 ## Installing from source
 Clone and install the latest version (requires Python 3.8.6 or later):
 ```
-git clone https://github.com/iTaxoTools/MoldGui.git
-cd MoldGui
+git clone https://github.com/iTaxoTools/MolDGui.git
+cd MolDGui
 pip install . -f packages.html
 ```
 
