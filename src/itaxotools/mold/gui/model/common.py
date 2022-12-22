@@ -102,8 +102,6 @@ class Task(Object):
         self.progression.emit(report)
 
     def onFail(self, report: ReportFail):
-        print(str(report.exception))
-        print(report.traceback)
         self.notification.emit(Notification.Fail(str(report.exception), report.traceback))
         self.busy = False
 
@@ -112,7 +110,7 @@ class Task(Object):
         self.busy = False
 
     def onStop(self, report: ReportStop):
-        # self.notification.emit(Notification.Warn('Cancelled by user.'))
+        self.notification.emit(Notification.Warn('Cancelled by user.'))
         self.busy = False
 
     def onDone(self, report: ReportDone):
@@ -123,7 +121,6 @@ class Task(Object):
 
     def start(self):
         """Slot for starting the task"""
-        print('OHAI')
         self.busy = True
         self.run()
 

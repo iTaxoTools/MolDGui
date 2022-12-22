@@ -21,7 +21,7 @@ import traceback
 from dataclasses import dataclass
 from typing import Any, NamedTuple, Callable, List, Dict
 
-from itaxotools.common.io import PipeIO
+from .io import PipeWriterIO
 
 import itaxotools
 
@@ -73,14 +73,12 @@ def progress_handler(*args, **kwargs):
     progress.send(report)
 
 
-def loop(commands, results, progress, pipeIn, pipeOut, pipeErr):
+def loop(commands, results, progress, pipe_out):
     """Wait for commands, send back results"""
 
-    inp = PipeIO(pipeIn, 'r')
-    out = PipeIO(pipeOut, 'w')
-    err = PipeIO(pipeErr, 'w')
+    out = PipeWriterIO(pipe_out, 1)
+    err = PipeWriterIO(pipe_out, 2)
 
-    sys.stdin = inp
     sys.stdout = out
     sys.stderr = err
 

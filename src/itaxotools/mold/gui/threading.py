@@ -27,7 +27,7 @@ import io
 
 from itaxotools.common.utility import override
 
-from .io import StreamMultiplexer
+from .io import StreamGroup, PipeWrite
 from .threading_loop import (
     Command, InitDone, ReportProgress, ReportDone, ReportFail, ReportExit, ReportStop, ReportQuit, loop)
 
@@ -48,9 +48,7 @@ class Worker(QtCore.QThread):
         self.log_path = log_path
 
         self.queue = mp.Queue()
-        self.pipeIn = None
-        self.pipeOut = None
-        self.pipeErr = None
+        self.pipe_out = None
         self.commands = None
         self.results = None
         self.reports = None
@@ -58,8 +56,8 @@ class Worker(QtCore.QThread):
         self.resetting = False
         self.quitting = False
 
-        self.streamOut = StreamMultiplexer(sys.stdout)
-        self.streamErr = StreamMultiplexer(sys.stderr)
+        self.streamOut = StreamGroup(sys.stdout)
+        self.streamErr = StreamGroup(sys.stderr)
 
         app = QtCore.QCoreApplication.instance()
         app.aboutToQuit.connect(self.quit)
@@ -96,8 +94,7 @@ class Worker(QtCore.QThread):
             sentinel: None,
             self.results: None,
             self.reports: self.progress.emit,
-            self.pipeOut: self.streamOut.write,
-            self.pipeErr: self.streamErr.write,
+            self.pipe_out: self.handle_output,
         }
         report = None
         while not report:
@@ -119,15 +116,19 @@ class Worker(QtCore.QThread):
                 self.handle_connections(waitList, readyList)
         return report
 
+    def handle_output(self, out: PipeWrite):
+        if out.tag == 1:
+            self.streamOut.write(out.text)
+        elif out.tag == 2:
+            self.streamErr.write(out.text)
+
     def handle_exit(self, task, waitList):
 
         self.consume_connections(waitList)
         exitcode = self.process.exitcode
         resetting = self.resetting
 
-        self.pipeIn.close()
-        self.pipeOut.close()
-        self.pipeErr.close()
+        self.pipe_out.close()
         self.commands.close()
         self.results.close()
         self.reports.close()
@@ -162,10 +163,16 @@ class Worker(QtCore.QThread):
         if isinstance(report, ReportDone):
             self.done.emit(report)
         elif isinstance(report, ReportFail):
+            self.streamErr.write(report.traceback)
+            self.streamErr.flush()
             self.fail.emit(report)
         if isinstance(report, ReportStop):
+            self.streamErr.write('\nCancelled process by user request.\n')
+            self.streamErr.flush()
             self.stop.emit(report)
         elif isinstance(report, ReportExit):
+            self.streamErr.write(f'Process failed with exit code: {report.exit_code}')
+            self.streamErr.flush()
             if report.id != 0:
                 self.error.emit(report)
 
@@ -185,15 +192,13 @@ class Worker(QtCore.QThread):
     def process_start(self):
         """Internal. Initialize process and pipes"""
         self.resetting = False
-        pipeIn, self.pipeIn = mp.Pipe(duplex=False)
-        self.pipeOut, pipeOut = mp.Pipe(duplex=False)
-        self.pipeErr, pipeErr = mp.Pipe(duplex=False)
+        self.pipe_out, pipe_out = mp.Pipe(duplex=False)
         commands, self.commands = mp.Pipe(duplex=False)
         self.results, results = mp.Pipe(duplex=False)
         self.reports, reports = mp.Pipe(duplex=False)
         self.process = mp.Process(
             target=loop, daemon=True, name=self.name,
-            args=(commands, results, reports, pipeIn, pipeOut, pipeErr))
+            args=(commands, results, reports, pipe_out))
         self.process.start()
 
     def exec(self, id, function, *args, **kwargs):

@@ -110,6 +110,12 @@ class MoldModel(Task):
         self.worker.streamOut.add(self.textLogIO)
         self.worker.streamErr.add(self.textLogIO)
 
+        self.failure_text = (
+            'The MolD algorithm has encountered problems when calculating '
+            'diagnostic sites from your sequences. Check you input file, or '
+            'try adjusting the parameters to better fit the variation in your data.'
+        )
+
     def readyTriggers(self):
         return [
             self.properties.sequence_path,
@@ -189,14 +195,6 @@ class MoldModel(Task):
             thresh = self.rdns.scoring.value,
         )
 
-    def stop(self):
-        if self.worker is None:
-            return
-        self.textLogIO.write('\n\nCancelled process by user request.\n')
-        self.worker.reset()
-        self.dirty_data = False
-        self.busy = False
-
     def clear(self):
         self.clearLogs.emit()
         self.result_id = None
@@ -214,18 +212,19 @@ class MoldModel(Task):
         self.dirty_data = True
 
     def onFail(self, report):
-        super().onFail(report)
         self.result_id = report.id
-        self.textLogIO.write(report.traceback)
+        self.notification.emit(Notification.Fail(self.failure_text, report.traceback))
+        self.busy = False
 
     def onError(self, report):
-        super().onError(report)
         self.result_id = report.id
-        self.textLogIO.write(f'Process failed with exit code: {report.exit_code}')
+        info = f'Process failed with exit code: {report.exit_code}'
+        self.notification.emit(Notification.Fail(self.failure_text, info))
+        self.busy = False
 
     def onStop(self, report):
-        super().onStop(report)
         self.result_id = report.id
+        self.busy = False
 
     def open_configuration_path(self, path):
         self.clear()

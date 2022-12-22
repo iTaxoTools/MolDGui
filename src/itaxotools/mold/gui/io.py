@@ -16,12 +16,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # -----------------------------------------------------------------------------
 
-from typing import Callable
+from typing import Callable, NamedTuple
 import io
 import sys
 
 
-class StreamMultiplexer(io.TextIOBase):
+class StreamGroup(io.TextIOBase):
     def __init__(self, *streams):
         super().__init__()
         self.streams = []
@@ -80,7 +80,7 @@ class StreamMultiplexer(io.TextIOBase):
 
 
 class WriterIO(io.TextIOBase):
-    """File-like object that only writes by calling a function"""
+    """File-like object that writes by simply calling a function"""
 
     def __init__(self, func: Callable[[str], None]):
         super().__init__()
@@ -107,3 +107,41 @@ class WriterIO(io.TextIOBase):
     def writelines(self, lines):
         for line in lines:
             self.writeline(line)
+
+
+class PipeWrite(NamedTuple):
+    tag: int
+    text: str
+
+
+class PipeWriterIO(io.TextIOBase):
+    """File-like object that writes to a pipe connection"""
+
+    def __init__(self, connection, tag=None):
+        super().__init__()
+        self.connection = connection
+        self.tag = tag
+
+    def close(self):
+        self.flush()
+        self.connection.close()
+        self.closed = True
+
+    def fileno(self):
+        return self.connection.fileno()
+
+    def readable(self):
+        return False
+
+    def writable(self):
+        return True
+
+    def write(self, text):
+        self.connection.send(PipeWrite(self.tag, text))
+
+    def writelines(self, lines):
+        for line in lines:
+            self.connection.send(line+'\n')
+
+    def flush(self):
+        pass
