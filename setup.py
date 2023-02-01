@@ -16,7 +16,7 @@ long_description = (here / "README.md").read_text(encoding="utf-8")
 
 setup(
     name="mold",
-    version="0.0.1",
+    version="0.1.0",
     description="Module and Gui for MolD",
     long_description=long_description,
     long_description_content_type="text/markdown",
@@ -37,7 +37,7 @@ setup(
     python_requires=">=3.8.6, <4",
     install_requires=[
         "PySide6>=6.1.3",
-        "itaxotools-common==0.2.dev4",
+        "itaxotools-common==0.2.4",
     ],
     extras_require={
         "dev": [
