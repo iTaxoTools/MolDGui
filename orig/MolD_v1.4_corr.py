@@ -1,25 +1,3 @@
-# -----------------------------------------------------------------------------
-# MolD - a novel software to compile accurate and reliable DNA diagnoses for taxonomic descriptions
-# Copyright (C) Alexander Fedosov, Guillaume Achaz, Andrey Gontchar, Nicolas Puillandre
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-# -----------------------------------------------------------------------------
-
-# This file was modified by Stefanos Patmanidis to better work with the Gui.
-# Refer to the original code here: https://github.com/SashaFedosov/MolD
-
-
 """
 This script compiles rDNC-based DNA diagnoses for a pre-defined taxa in a dataset. This is the MAIN WORKING VERSION v1.4
 This version already implements the new functionalities:
@@ -329,7 +307,6 @@ def getAllPairs(taxalist):
             uniquetaxapairs.append([stl[i],stl[j]])
     return uniquetaxapairs
 
-
 ################################################READ IN PARAMETER FILE AND DATA FILE
 
 def get_args(): #arguments needed to give to this script
@@ -338,7 +315,7 @@ def get_args(): #arguments needed to give to this script
     required.add_argument("-i", help="textfile with parameters of the analysis", required=True)
     return parser.parse_args()
 
-def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None, numnucl=None, numiter=None, maxlenraw=None, maxlenrefined=None, iref=None, pdiff=None, nmax=None, thresh=None, tmpfname=None, origfname=None, outfname=None):
+def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None, numnucl=None, numiter=None, maxlenraw=None, maxlenrefined=None, iref=None, pdiff=None, nmax=None, thresh=None, tmpfname=None, origfname=None):
     ParDict = {}
     if not(all([gapsaschars, taxalist, taxonrank, cutoff, numnucl, numiter, maxlenraw, maxlenrefined, iref, pdiff, nmax, thresh, tmpfname])):
         args = get_args()
@@ -366,11 +343,11 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
         #ParDict['PrSeq'] = prseq
         ParDict['NMaxSeq'] = nmax
         ParDict['Scoring'] = thresh
-        ParDict['OUTPUT_FILE'] = outfname or "str"
+        ParDict['OUTPUT_FILE'] = "str"
     print(ParDict)
     ############################################# #VERYNEW HOW GAPS ARE TREATED
     #REQUIRES A NEW FIELD IN THE GUI
-    if ParDict['Gaps_as_chars'].lower() == 'yes':
+    if ParDict['Gaps_as_chars'] == 'yes':
         gaps2D = True#VERYNEW
     else:#VERYNEW
         gaps2D = False#VERYNEW
@@ -501,7 +478,6 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
                 print('UNRECOGNIZED TAXON', item)
     #OCT2022 - end
     print('query taxa:', len(qCLADEs+withplus), '-', str(sorted(qCLADEs)+sorted(withplus)).replace('[','').replace(']','').replace("'", ''))#1.3
-    # print('pairwise taxa:', len(P2), '-', ', '.join('VS'.join(items) for items in P2))
 
     if 'Cutoff' in list(ParDict.keys()):#CUTOFF Number of the informative positions to be considered, default 100
         Cutoff = ParDict['Cutoff']#VERYNEW
@@ -741,7 +717,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
             t1 = apair[0]
             t2 = apair[1]
             p2records = [i for i in raw_records if i[1] in [t1, t2]]
-            # print('\n**************', t1, 'VS', t2,'**************')
+            print('\n**************', t1, 'VS', t2,'**************')
             print('<h4>**************', t1, 'VS', t2, '**************</h4>', file=h)
             C2, css2, sp2 = Step1(p2records)#STEP1
             x2,y2,z2,pures2 = C_VP_PP(css2, t1, sp2, '>0')#STEP2 ####! added pures
@@ -750,7 +726,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
             for site in pures2:
                 counterPures[site] = "'or'".join(list(set([thing[site] for thing in css2[t2] if thing[site] != 'N'])))
                 Pairphrase = Pairphrase + str(site+corr)+" ('"+str(y2[site])+"' vs '"+str(counterPures[site])+"'), "
-            # print(Pairphrase[:-2])
+            print(Pairphrase[:-2])
             print("<p>",Pairphrase[:-2],'</h4>', file=h)#OCT2022
             x2r,y2r,z2r,pures2r = C_VP_PP(css2, t2, sp2, '>0')#STEP2 ####! added pures
             Pairphraser = 'Each of the following '+ str(len(pures2r))+' sites is invariant across sequences of '+ t2+ ' and differentiates it from '+ t1+': '
@@ -758,7 +734,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
             for site in pures2r:
                 counterPuresr[site] = "'or'".join(list(set([thing[site] for thing in css2[t1] if thing[site] != 'N'])))
                 Pairphraser = Pairphraser + str(site+corr)+" ('"+str(y2r[site])+"' vs '"+str(counterPuresr[site])+"'), "
-            # print(Pairphraser[:-2])
+            print(Pairphraser[:-2])
             print("<p>",Pairphraser[:-2],'</h4>', file=h)#OCT2022
         h.close()
 
