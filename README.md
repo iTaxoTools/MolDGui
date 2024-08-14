@@ -2,16 +2,16 @@
 
 Identify diagnostic nucleotide combinations (DNCs) in DNA sequence alignments, which can be used to provide formal diagnoses of these taxa. This is in the form of "redundant DNC” (rDNC), which takes into account unsampled genetic diversity.
 
-This is a Qt GUI for [Mold v1.4](https://github.com/SashaFedosov/MolD/releases/tag/v1.4).
+This is a Qt GUI for [Mold v1.4.2](https://github.com/SashaFedosov/MolD/releases/tag/v1.4).
 
 ## Executables
 
 Download and run the standalone executables without installing Python.
 
 [![Windows](https://img.shields.io/badge/Windows-blue.svg?style=for-the-badge&logo=windows)](
-    https://github.com/iTaxoTools/MolDGui/releases/download/v0.1.1/MolD-0.1.1-windows-x64.exe)
+    https://github.com/iTaxoTools/MolDGui/releases/download/v1.4.2/MolD-1.4.2-windows-x64.exe)
 [![MacOS](https://img.shields.io/badge/macOS-slategray.svg?style=for-the-badge&logo=apple)](
-    https://github.com/iTaxoTools/MolDGui/releases/download/v0.1.1/MolD-0.1.1-macos-universal2.dmg)
+    https://github.com/iTaxoTools/MolDGui/releases/download/v1.4.2/MolD-1.4.2-macos-universal2.dmg)
 
 ## Manual
 You can read more about MolD and how to use it in the manual.<br>
