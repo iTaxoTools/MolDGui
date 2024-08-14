@@ -2,7 +2,7 @@
 
 Identify diagnostic nucleotide combinations (DNCs) in DNA sequence alignments, which can be used to provide formal diagnoses of these taxa. This is in the form of "redundant DNC” (rDNC), which takes into account unsampled genetic diversity.
 
-This is a Qt GUI for [Mold v1.4](https://github.com/SashaFedosov/MolD).
+This is a Qt GUI for [Mold v1.4](https://github.com/SashaFedosov/MolD/releases/tag/v1.4).
 
 ## Executables
 
