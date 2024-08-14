@@ -9,9 +9,9 @@ This is a Qt GUI for [Mold v1.4](https://github.com/SashaFedosov/MolD).
 Download and run the standalone executables without installing Python.
 
 [![Windows](https://img.shields.io/badge/Windows-blue.svg?style=for-the-badge&logo=windows)](
-    https://github.com/iTaxoTools/MolDGui/releases/download/v0.2.2/MolD-0.1.1-windows-x64.exe)
+    https://github.com/iTaxoTools/MolDGui/releases/download/v0.1.1/MolD-0.1.1-windows-x64.exe)
 [![MacOS](https://img.shields.io/badge/macOS-slategray.svg?style=for-the-badge&logo=apple)](
-    https://github.com/iTaxoTools/MolDGui/releases/download/v0.2.2/MolD-0.1.1-macos-universal2.dmg)
+    https://github.com/iTaxoTools/MolDGui/releases/download/v0.1.1/MolD-0.1.1-macos-universal2.dmg)
 
 ## Manual
 You can read more about MolD and how to use it in the manual.<br>
