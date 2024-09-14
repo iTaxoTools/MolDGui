@@ -309,10 +309,9 @@ def medianSeqLen(listofseqs):#OCT2022
     seqlens = [i.count('A')+i.count('C')+i.count('G')+i.count('T') for i in listofseqs]
     medlen = sorted(seqlens)[int(len(seqlens)/2)]
     medseq = listofseqs[seqlens.index(medlen)]
-    start = min([medseq.find('A'),medseq.find('C'),medseq.find('G'),medseq.count('T')])
-    if not 'N' in medseq[start:]:
-        end = len(medseq)
-    else:
+    start = min([medseq.find('A'),medseq.find('C'),medseq.find('G'),medseq.find('T')])
+    end = len(medseq)
+    if 'N' in medseq[start:]:
         for i in range(start, len(medseq), 1):
             if medseq[i:].count('N') == len(medseq[i:]):
                 end = i
