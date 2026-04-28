@@ -305,18 +305,20 @@ def Screwed_dataset_new(raw_records, nseq_per_clade_to_screw, PositionArrays, Va
     return x, y
 
 #NEWFUNCYIONS
-def medianSeqLen(listofseqs):#OCT2022
+def medianSeqLen(listofseqs):#OCT2024
     seqlens = [i.count('A')+i.count('C')+i.count('G')+i.count('T') for i in listofseqs]
     medlen = sorted(seqlens)[int(len(seqlens)/2)]
     medseq = listofseqs[seqlens.index(medlen)]
     start = min([medseq.find('A'),medseq.find('C'),medseq.find('G'),medseq.find('T')])
-    end = len(medseq)
-    if 'N' in medseq[start:]:
-        for i in range(start, len(medseq), 1):
-            if medseq[i:].count('N') == len(medseq[i:]):
+    if not 'N' in medseq[start:]:
+        end = len(medseq)
+    else:
+        for i in range(len(medseq)-1, -1, -1):
+            if medseq[i] in 'ACGT':
                 end = i
                 break
-    return medlen, start, end
+    return len(medseq[start: end]), start, end, [sorted(seqlens)[-1], sorted(seqlens)[-5]]
+
 
 def getAllPairs(taxalist):
     uniquetaxapairs = []
@@ -419,17 +421,20 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
     if len(set([len(i[2]) for i in imported])) != 1:
         print('Alignment contains sequences of different lengths:', set([len(i[2]) for i in imported]))
     else:
-        mlen, sstart, send = medianSeqLen([i[2] for i in imported])#OCT2022 - start
+        Slice = False#OCT2024 - start
+        mlen, sstart, send, SL = medianSeqLen([i[2] for i in imported])
         if mlen + NumberN < len(imported[0][2]):
             Slice = True
+        if SL[0] > SL[1]:
+            Slice = True
+        if Slice == True:
             FragmentLen = mlen
             corr = sstart
         else:
-            Slice = False
             FragmentLen = len(imported[0][2])
             sstart = 0
             send = FragmentLen+1
-            corr = 0
+            corr = 0#OCT2024 - end
     raw_records=[]
     for i in imported:
         if ParDict['Iref'] != 'NO' and ParDict['Iref'].split(',')[0] == i[0] and ParDict['Iref'].split(',')[1] in ['ex', 'excl', 'out']:
@@ -437,7 +442,7 @@ def mainprocessing(gapsaschars=None, taxalist=None, taxonrank=None, cutoff=None,
         else:
             if i[2][sstart:send].count('N') < NumberN and len(i[2][sstart:send]) == FragmentLen:
                 newi = [i[0], i[1], i[2][sstart:send]]
-                raw_records.append(newi)#OCT2022 - end
+                raw_records.append(newi)
     print('\n########################## PARAMETERS ######################\n')#VERYNEW
     #print('input file:', ParDict['ORIG_FNAME']) #Outcommented ORIG_FNAME
     print('input file:', ParDict['INPUT_FILE']) #Replacement of the line above
