@@ -69,7 +69,7 @@ class Task(Object):
     def __init__(self, name=None):
         super().__init__(name or self._get_next_name())
 
-        self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_')
+        self.temporary_directory = TemporaryDirectory(prefix=f'{self.task_name}_', ignore_cleanup_errors=True)
         self.temporary_path = Path(self.temporary_directory.name)
 
         self.worker = Worker(name=self.name, eager=True, log_path=self.temporary_path)
@@ -87,6 +87,12 @@ class Task(Object):
             self.properties.done,
         ]:
             property.notify.connect(self.checkEditable)
+
+    def __del__(self):
+        if hasattr(self, 'worker'):
+            self.worker.quit()
+        if hasattr(self, 'temporary_directory'):
+            self.temporary_directory.cleanup()
 
     @classmethod
     def _get_next_name(cls):

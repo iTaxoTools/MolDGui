@@ -70,15 +70,15 @@ class Worker(QtCore.QThread):
         Internal. This is executed on the new thread after start() is called.
         Once a child process is ready, enter an event loop.
         """
-        with self.open_log('all.log'):
-            if self.eager:
+        if self.eager:
+            self.process_start()
+        while not self.quitting:
+            task = self.queue.get()
+            if task is None:
+                break
+            if self.process is None or not self.process.is_alive():
                 self.process_start()
-            while not self.quitting:
-                task = self.queue.get()
-                if task is None:
-                    break
-                if self.process is None:
-                    self.process_start()
+            with self.open_log('all.log'):
                 with self.open_log(f'{str(task.id)}.log'):
                     self.commands.send(task)
                     report = self.loop(task)
