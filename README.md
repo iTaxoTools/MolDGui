@@ -1,5 +1,14 @@
 # MoldGui
 
+[![PyPI - Version](https://img.shields.io/pypi/v/itaxotools-mold-gui?color=tomato)](
+    https://pypi.org/project/itaxotools-mold-gui)
+[![PyPI - Python Version](https://img.shields.io/pypi/pyversions/itaxotools-mold-gui)](
+    https://pypi.org/project/itaxotools-mold-gui)
+[![GitHub - Windows](https://img.shields.io/github/actions/workflow/status/iTaxoTools/MolDGui/windows.yml?label=windows)](
+    https://github.com/iTaxoTools/MolDGui/actions/workflows/windows.yml)
+[![GitHub - macOS](https://img.shields.io/github/actions/workflow/status/iTaxoTools/MolDGui/macos.yml?label=macos)](
+    https://github.com/iTaxoTools/MolDGui/actions/workflows/macos.yml)
+
 Identify diagnostic nucleotide combinations (DNCs) in DNA sequence alignments, which can be used to provide formal diagnoses of these taxa. This is in the form of "redundant DNC” (rDNC), which takes into account unsampled genetic diversity.
 
 This is a Qt GUI for [Mold v1.4.3](https://github.com/SashaFedosov/MolD/tree/9bc74146).
@@ -8,24 +17,23 @@ This is a Qt GUI for [Mold v1.4.3](https://github.com/SashaFedosov/MolD/tree/9bc
 
 Download and run the standalone executables without installing Python.
 
-[![Windows](https://img.shields.io/badge/Windows-blue.svg?style=for-the-badge&logo=windows)](
-    https://github.com/iTaxoTools/MolDGui/releases/download/v1.4.2/MolD-1.4.2-windows-x64.exe)
+[![Release](https://img.shields.io/badge/release-MolD_1.4.3-red?style=for-the-badge)](
+    https://github.com/iTaxoTools/MolDGui/releases/v1.4.3)
+[![Windows](https://img.shields.io/badge/Windows-blue.svg?style=for-the-badge&logo=data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPCEtLSBDcmVhdGVkIHdpdGggSW5rc2NhcGUgKGh0dHA6Ly93d3cuaW5rc2NhcGUub3JnLykgLS0+Cjxzdmcgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9IjAgMCAxMi43IDEyLjciIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CiA8ZyBmaWxsPSIjZmZmIiBzdHJva2UtbGluZWNhcD0ic3F1YXJlIiBzdHJva2Utd2lkdGg9IjMuMTc0OSI+CiAgPHJlY3QgeD0iLjc5MzczIiB5PSIuNzkzNzMiIHdpZHRoPSI1LjAyNyIgaGVpZ2h0PSI1LjAyNyIvPgogIDxyZWN0IHg9IjcuMTQzNiIgeT0iLjc5MzczIiB3aWR0aD0iNC43NjI0IiBoZWlnaHQ9IjUuMDI3Ii8+CiAgPHJlY3QgeD0iLjc5MzczIiB5PSI2Ljg3OSIgd2lkdGg9IjUuMDI3IiBoZWlnaHQ9IjUuMDI3Ii8+CiAgPHJlY3QgeD0iNy4xNDM2IiB5PSI2Ljg3OSIgd2lkdGg9IjQuNzYyNCIgaGVpZ2h0PSI1LjAyNyIvPgogPC9nPgo8L3N2Zz4K)](
+    https://github.com/iTaxoTools/MolDGui/releases/download/v1.4.3/MolD-1.4.3-windows-x64.exe)
 [![MacOS](https://img.shields.io/badge/macOS-slategray.svg?style=for-the-badge&logo=apple)](
-    https://github.com/iTaxoTools/MolDGui/releases/download/v1.4.2/MolD-1.4.2-macos-universal2.dmg)
+    https://github.com/iTaxoTools/MolDGui/releases/download/v1.0.0/MolDGui-1.4.3-macos-universal2.dmg)
 
-## Manual
-You can read more about MolD and how to use it in the manual.<br>
-[MolD_v1_4_manual.pdf](src/itaxotools/mold/gui/docs/MolD_v1_4_manual.pdf)
+## Installation
 
-## Installing from source
-Clone and install the latest version (requires Python 3.8.6 or later):
+MolD is available on PyPI and can be installed using `pip`:
+
 ```
-git clone https://github.com/iTaxoTools/MolDGui.git
-cd MolDGui
-pip install . -f packages.html
+pip install itaxotools-mold-gui
 ```
 
-To launch the GUI, please use:
+After installation, run the program with:
+
 ```
 mold-gui
 ```
@@ -35,13 +43,9 @@ You may also invoke the command-line version of MolD:
 mold
 ```
 
-## Packaging
-
-It is recommended to use PyInstaller from within a virtual environment:
-```
-pip install ".[dev]" -f packages.html
-pyinstaller scripts/mold.spec
-```
+## Manual
+You can read more about MolD and how to use it in the manual.<br>
+[MolD_v1_4_manual.pdf](src/itaxotools/mold/gui/docs/MolD_v1_4_manual.pdf)
 
 
 ## Citations
